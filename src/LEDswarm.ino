@@ -1,9 +1,10 @@
 // #define TIME_SYNC_INTERVAL  6000000  // Time resync period, in us. 600 sec = 10 min
+#define _TASK_MICRO_RES     // Turn on microsecond timing
+
 #include "LEDswarm.h"
 #include "painlessMesh.h"
 #include "ArduinoTapTempo.h"  // pio lib [--global] install https://github.com/dxinteractive/ArduinoTapTempo.git
 #include "FastLED.h"
-
 
 #define   BUTTON_PIN        0
 
@@ -11,30 +12,30 @@
 #define   MESH_PASSWORD     "somethingSneaky"
 #define   MESH_PORT         5555
 
-
 #define   DEFAULT_BPM       120
 #define   DEFAULT_PATTERN   0
 
+#define   DEFAULT_BRIGHTNESS  100  // 0-255, higher number is brighter.
 #define   NUM_LEDS          30
 #define   DATA_PIN          5
 CRGB leds[NUM_LEDS];
+uint8_t maxBright = DEFAULT_BRIGHTNESS ;
+
 
 painlessMesh  mesh;
 SimpleList<uint32_t> nodes;
 uint32_t sendMessageTime = 0; // how often to send broadcast messages
 String role ;
 
-
-
-
 uint8_t currentPatternId = DEFAULT_PATTERN ;
 uint32_t currentBeatLength = 60000 / DEFAULT_BPM ;
 
 ArduinoTapTempo tapTempo;
 uint32_t tapTimer = 0 ;
-#define HOLD_TIME 1000000   // wait time before tapping in new BPM
+#define HOLD_TIME 1000000   // wait time before tapping in new BPM, in uS
 uint32_t holdTimer = 0 ;
 
+Task taskSendBeatSync( 5000 * 1000 , TASK_FOREVER, &sendBeatSync ); // send a Beat sync message every 5 seconds
 
 void setup() {
   Serial.begin(115200);
@@ -53,6 +54,8 @@ void setup() {
 
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
 
+  mesh.scheduler.addTask( taskSendBeatSync );
+
   Serial.print("Starting up... I am: ");
   Serial.println(mesh.getNodeId()) ;
 
@@ -65,8 +68,9 @@ void setup() {
 
 void loop() {
   mesh.update();
-  checkButtonPress();
+  checkButtonPress(); // TODO: taskify this
 
+  // TODO: taskify this:
   if( tapTimer < mesh.getNodeTime() and holdTimer < mesh.getNodeTime() ) {
     tapTempo.update(true);
     // Rounds it up to the next whole 1
@@ -80,85 +84,29 @@ void loop() {
   if ( thisNodeMaster() ) {
     role = "MASTER" ;
     // send broadcast messages with BPM and pattern-id and next patternstarttime
-    if (sendMessageTime == 0) {
-      sendMessageTime = mesh.getNodeTime() + 5000000 ; // send a message every 200 ms
-    }
-
-    if (sendMessageTime != 0 && (int)sendMessageTime - (int)mesh.getNodeTime() < 0) { // Cast to int in case of time rollover
-      DynamicJsonBuffer jsonBuffer;
-      JsonObject& msg = jsonBuffer.createObject();
-
-      msg["currentPatternId"]  = currentPatternId;
-      msg["currentBeatLength"] = currentBeatLength;
-      msg["taptimer"]          = tapTimer ;
-
-      String str;
-      msg.printTo(str);
-      mesh.sendBroadcast(str);
-      sendMessageTime = 0;
-
-      Serial.printf("%s %u: Sent broadcast message: ", role.c_str(), mesh.getNodeTime() );
-      Serial.println(str);
-    }
+    taskSendBeatSync.enableIfNot() ;
   } else {
     role = "SLAVE" ;
+    taskSendBeatSync.disable() ;
   }
 }
 
-void receivedCallback( uint32_t from, String &msg ) {
-  //  Serial.printf("Received msg from %u: %s\n", from, msg.c_str());
-  if ( ! thisNodeMaster() ) {
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject& root  = jsonBuffer.parseObject(msg);
-    currentPatternId  = root["currentPatternId"].as<uint8_t>() ;
-    currentBeatLength = root["currentBeatLength"].as<uint32_t>() ;
-    Serial.printf("SLAVE %u: from: %u \tpattern: %u \tBL: %u\n", mesh.getNodeTime(), from, currentPatternId, currentBeatLength  );
+// Better to have static and keep the memory allocated or not??
+void sendBeatSync() {
+  static DynamicJsonBuffer jsonBuffer;
+  static JsonObject& msg = jsonBuffer.createObject();
 
-    if( tapTimer != root["taptimer"].as<uint32_t>() ) {
-      tapTimer = root["taptimer"].as<uint32_t>() ;
-      Serial.printf("SLAVE %u: Unsynced with MASTER. Next tapTime (from master): %u\n", mesh.getNodeTime(), tapTimer ) ;
-    } else {
-      Serial.printf("SLAVE %u: In SYNC with MASTER. Next tapTime: %u\n", mesh.getNodeTime(), tapTimer );
-    }
+  msg["currentBeatLength"] = currentBeatLength;
+  msg["taptimer"]          = tapTimer ;
 
-  } else {
-    Serial.printf("received msg from %u but I'm the master\n", from) ;
-  }
+  String str;
+  msg.printTo(str);
+  mesh.sendBroadcast(str);
 
-  Serial.println(); // whitespace for easier reading
-
+  Serial.printf("%s %u: Sent broadcast message: ", role.c_str(), mesh.getNodeTime() );
+  Serial.println(str);
 }
 
-void newConnectionCallback(uint32_t nodeId) {
-  Serial.printf("-- > startHere: New Connection, nodeId = %u\n", nodeId);
-  nodes = mesh.getNodeList();
-  nodes.push_back(mesh.getNodeId()); // add ourselves to the nodes list
-}
-
-void changedConnectionCallback() {
-  Serial.printf("Changed connections %s\n", mesh.subConnectionJson().c_str());
-
-  nodes = mesh.getNodeList();
-  nodes.push_back(mesh.getNodeId()); // add ourselves to the nodes list
-
-  Serial.printf("Num nodes: %d\n", nodes.size());
-  Serial.printf("Connection list: ");
-
-  SimpleList<uint32_t>::iterator node = nodes.begin();
-  while (node != nodes.end()) {
-    Serial.printf(" %u", *node);
-    node++;
-  }
-  Serial.println();
-}
-
-void nodeTimeAdjustedCallback(int32_t offset) {
-  Serial.printf("Adjusted time %u. Offset = %d\n", mesh.getNodeTime(), offset);
-}
-
-void delayReceivedCallback(uint32_t from, int32_t delay) {
-  Serial.printf("Delay to node %u is %d us\n", from, delay);
-}
 
 void checkButtonPress() {
   static unsigned long buttonTimer = 0;

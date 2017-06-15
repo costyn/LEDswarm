@@ -28,21 +28,3 @@ void addGlitter( fract8 chanceOfGlitter)
 int mod(int x, int m) {
   return (x % m + m) % m;
 }
-
-
-
-uint32_t getMasterNodeId() {
-  uint32_t lowestId = UINT32_MAX ;
-  SimpleList<uint32_t>::iterator node = nodes.begin();
-  while ( node != nodes.end() ) {
-    if (  *node < lowestId ) {
-      lowestId = *node ;
-    }
-    node++;
-  }
-  return lowestId ;
-}
-
-bool thisNodeMaster() {
-  return mesh.getNodeId() == getMasterNodeId() ;
-}
