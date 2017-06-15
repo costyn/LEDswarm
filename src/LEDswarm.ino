@@ -1,41 +1,31 @@
-
+// #define TIME_SYNC_INTERVAL  6000000  // Time resync period, in us. 600 sec = 10 min
+#include "LEDswarm.h"
 #include "painlessMesh.h"
 #include "ArduinoTapTempo.h"  // pio lib [--global] install https://github.com/dxinteractive/ArduinoTapTempo.git
-
-
-#ifdef INCLUDE_LEDS
 #include "FastLED.h"
-#endif
 
-#define   MESH_PREFIX     "LEDforge.com LEDswarm"
-#define   MESH_PASSWORD   "somethingSneaky"
-#define   MESH_PORT       5555
 
-// #define TIME_SYNC_INTERVAL  6000000  // Time resync period, in us. 600 sec = 10 min
+#define   BUTTON_PIN        0
+
+#define   MESH_PREFIX       "LEDforge.com LEDswarm"
+#define   MESH_PASSWORD     "somethingSneaky"
+#define   MESH_PORT         5555
+
 
 #define   DEFAULT_BPM       120
 #define   DEFAULT_PATTERN   0
 
-#ifdef INCLUDE_LEDS
-#define    NUM_LEDS 5
-#define   DATA_PIN 2
+#define   NUM_LEDS          30
+#define   DATA_PIN          5
 CRGB leds[NUM_LEDS];
-#endif
 
 painlessMesh  mesh;
 SimpleList<uint32_t> nodes;
 uint32_t sendMessageTime = 0; // how often to send broadcast messages
 String role ;
 
-#define BUTTON_PIN 0
 
-// prototype methods:
-void receivedCallback( uint32_t from, String &msg );
-void newConnectionCallback(uint32_t nodeId) ;
-void changedConnectionCallback() ;
-void nodeTimeAdjustedCallback(int32_t offset) ;
-void delayReceivedCallback(uint32_t from, int32_t delay) ;
-void setTapTempo() ;
+
 
 uint8_t currentPatternId = DEFAULT_PATTERN ;
 uint32_t currentBeatLength = 60000 / DEFAULT_BPM ;
@@ -44,8 +34,7 @@ ArduinoTapTempo tapTempo;
 uint32_t tapTimer = 0 ;
 #define HOLD_TIME 1000000   // wait time before tapping in new BPM
 uint32_t holdTimer = 0 ;
-unsigned long buttonTimer = 0;
-bool buttonActive = false;
+
 
 void setup() {
   Serial.begin(115200);
@@ -62,9 +51,7 @@ void setup() {
 
   nodes.push_back( mesh.getNodeId() ) ;
 
-  #ifdef INCLUDE_LEDS
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
-  #endif
 
   Serial.print("Starting up... I am: ");
   Serial.println(mesh.getNodeId()) ;
@@ -73,44 +60,12 @@ void setup() {
 }
 
 
-uint32_t getMasterNodeId() {
-  uint32_t lowestId = UINT32_MAX ;
-  SimpleList<uint32_t>::iterator node = nodes.begin();
-  while ( node != nodes.end() ) {
-    if (  *node < lowestId ) {
-      lowestId = *node ;
-    }
-    node++;
-  }
-  return lowestId ;
-}
-
-bool thisNodeMaster() {
-  return mesh.getNodeId() == getMasterNodeId() ;
-}
 
 #define SHORT_PRESS_MIN_TIME 50   // minimum time for a short press - debounce
 
 void loop() {
   mesh.update();
-
-  if( digitalRead(BUTTON_PIN) == LOW ) {
-    if (buttonActive == false) {
-      buttonActive = true;
-      buttonTimer = millis();
-    }
-  } else {
-    if (buttonActive == true) {
-      buttonActive = false; // reset
-      if ( millis() - buttonTimer > SHORT_PRESS_MIN_TIME ) {    // test if debounce is reached
-        tapTempo.update(true); // update ArduinoTapTempo
-        currentBeatLength = tapTempo.getBeatLength();
-        Serial.printf("%s %u: Button TAP. %u. BPM: ", role.c_str(), mesh.getNodeTime(), currentBeatLength );
-        Serial.println(tapTempo.getBPM() );
-        holdTimer = mesh.getNodeTime() + HOLD_TIME ;
-      }
-    }
-  }
+  checkButtonPress();
 
   if( tapTimer < mesh.getNodeTime() and holdTimer < mesh.getNodeTime() ) {
     tapTempo.update(true);
@@ -203,4 +158,27 @@ void nodeTimeAdjustedCallback(int32_t offset) {
 
 void delayReceivedCallback(uint32_t from, int32_t delay) {
   Serial.printf("Delay to node %u is %d us\n", from, delay);
+}
+
+void checkButtonPress() {
+  static unsigned long buttonTimer = 0;
+  static bool buttonActive = false;
+
+  if( digitalRead(BUTTON_PIN) == LOW ) {
+    if (buttonActive == false) {
+      buttonActive = true;
+      buttonTimer = millis();
+    }
+  } else {
+    if (buttonActive == true) {
+      buttonActive = false; // reset
+      if ( millis() - buttonTimer > SHORT_PRESS_MIN_TIME ) {    // test if debounce is reached
+        tapTempo.update(true); // update ArduinoTapTempo
+        currentBeatLength = tapTempo.getBeatLength();
+        Serial.printf("%s %u: Button TAP. %u. BPM: ", role.c_str(), mesh.getNodeTime(), currentBeatLength );
+        Serial.println(tapTempo.getBPM() );
+        holdTimer = mesh.getNodeTime() + HOLD_TIME ;
+      }
+    }
+  }
 }
