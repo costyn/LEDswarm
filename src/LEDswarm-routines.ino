@@ -1,5 +1,65 @@
 #include <arduino.h>
 
+#define STEPS       3   // How wide the bands of color are.  1 = more like a gradient, 10 = more like stripes
+
+void FillLEDsFromPaletteColors(uint8_t paletteIndex ) {
+  static uint8_t startIndex = 1;  // initialize at start
+  const int8_t flowDir = -1 ;
+
+if( firstPatternIteration ) {
+  startIndex = 1 ;
+  firstPatternIteration = false ;
+}
+
+  const CRGBPalette16 palettes[] = { RainbowStripeColors_p,
+#ifdef RT_P_RB
+                                     RainbowColors_p,
+#endif
+#ifdef RT_P_OCEAN
+                                     OceanColors_p,
+#endif
+#ifdef RT_P_HEAT
+                                     HeatColors_p,
+#endif
+#ifdef RT_P_LAVA
+                                     LavaColors_p,
+#endif
+#ifdef RT_P_PARTY
+                                     PartyColors_p,
+#endif
+#ifdef RT_P_CLOUD
+                                     CloudColors_p,
+#endif
+#ifdef RT_P_FOREST
+                                     ForestColors_p
+#endif
+                                   } ;
+  startIndex += flowDir ;
+
+  uint8_t colorIndex = startIndex ;
+
+  for ( uint8_t i = 0; i < NUM_LEDS; i++) {
+    leds[i] = ColorFromPalette( palettes[paletteIndex], colorIndex, maxBright, LINEARBLEND );
+    colorIndex += STEPS;
+  }
+
+  /* add extra glitter during "fast"
+  if ( taskCurrentPatternSelect.getInterval() < 5000 ) {
+    addGlitter(250);
+  } else {
+    addGlitter(25);
+  }
+  */
+
+  FastLED.setBrightness( maxBright ) ;
+  FastLED.show();
+
+//  taskCurrentPatternSelect.setInterval( beatsin16( tapTempo.getBPM(), 1500, 50000) ) ; // microseconds
+  taskCurrentPatternSelect.setInterval( beatsin16( tapTempo.getBPM(), 5, 50 ) ) ;
+}
+
+
+
 #ifdef RT_FADE_GLITTER
 void fadeGlitter() {
   addGlitter(90);
@@ -14,7 +74,7 @@ void fadeGlitter() {
 #ifdef RT_DISCO_GLITTER
 void discoGlitter() {
   fill_solid(leds, NUM_LEDS, CRGB::Black);
-  addGlitter(map( constrain( activityLevel(), 0, 3000), 0, 3000, 100, 255 ));
+  addGlitter(240);
   FastLED.setBrightness( maxBright ) ;
   FastLED.show();
 }
@@ -24,12 +84,11 @@ void discoGlitter() {
 
 
 #ifdef RT_STROBE1
-#define FLASHLENGTH 20
 void strobe1() {
   if ( tapTempo.beatProgress() > 0.95 ) {
-    fill_solid(leds, NUM_LEDS, CHSV( map( yprX, 0, 360, 0, 255 ), 255, 255)); // yaw for color
+    fill_solid(leds, NUM_LEDS, CRGB::White ); // yaw for color
   } else if ( tapTempo.beatProgress() > 0.80 and tapTempo.beatProgress() < 0.85 ) {
-    fill_solid(leds, NUM_LEDS, CRGB::White );
+//    fill_solid(leds, NUM_LEDS, CRGB::White );
   } else {
     fill_solid(leds, NUM_LEDS, CRGB::Black); // black
   }
@@ -44,6 +103,8 @@ void strobe1() {
 #define COOLING  55
 #define SPARKING 120
 #define FIRELEDS round( NUM_LEDS / 2 )
+
+// TODO: replace with original Fire2012 for LED strips
 
 // Adapted Fire2012. This version starts in the middle and mirrors the fire going down to both ends.
 // Works well with the Adafruit glow fur scarf.
@@ -201,7 +262,7 @@ void twirlers(uint8_t numTwirlers, bool opposing ) {
   }
   FastLED.setBrightness( maxBright ) ;
   FastLED.show();
-  taskLedModeSelect.setInterval( 1 * TASK_RES_MULTIPLIER ) ;
+  taskCurrentPatternSelect.setInterval( 1 * TASK_RES_MULTIPLIER ) ;
 }
 #endif
 
@@ -421,7 +482,7 @@ void bounceBlend() {
   FastLED.setBrightness( maxBright ) ;
   FastLED.show();
 
-  if ( (taskLedModeSelect.getRunCounter() % 10 ) == 0 ) {
+  if ( (taskCurrentPatternSelect.getRunCounter() % 10 ) == 0 ) {
     startLed++ ;
     if ( startLed + 1 == NUM_LEDS ) startLed = 0  ;
   }
@@ -486,7 +547,7 @@ void pulse3() {
   static uint8_t middle = 0 ;
 
   if ( width == 1 ) {
-    middle = taskLedModeSelect.getRunCounter() % 60 + taskLedModeSelect.getRunCounter() % 2;
+    middle = taskCurrentPatternSelect.getRunCounter() % 60 + taskCurrentPatternSelect.getRunCounter() % 2;
   }
 
   fill_solid(leds, NUM_LEDS, CRGB::Black);
@@ -504,7 +565,7 @@ void pulse5( uint8_t numPulses, boolean leadingDot) {
   uint8_t pulseWidth = (spacing / 2) - 1 ; // leave 1 led empty at max
   uint8_t middle = beatsin8( 5, 0, NUM_LEDS / 2) ;
   uint8_t width = beatsin8( tapTempo.getBPM(), 0, pulseWidth) ;
-  uint8_t hue = map( yprX, 0, 360, 0, 255 ) ;
+  uint8_t hue = beatsin8( tapTempo.getBPM(), 0, 30) ;
 
   fill_solid(leds, NUM_LEDS, CRGB::Black);
 
@@ -546,7 +607,7 @@ void threeSinPal() {
   static CRGBPalette16 currentPalette(CRGB::Black);
   static CRGBPalette16 targetPalette(PartyColors_p);
 
-  if ( taskLedModeSelect.getRunCounter() % 2 == 0 ) {
+  if ( taskCurrentPatternSelect.getRunCounter() % 2 == 0 ) {
     nblendPaletteTowardPalette( currentPalette, targetPalette, MAXCHANGES);
 
     wave1 += beatsin8(10, -4, 4);
@@ -591,4 +652,18 @@ void threeSinPal() {
   FastLED.show();
 
 } // threeSinPal()
+#endif
+
+
+#ifdef RT_CYLON
+void cylon() {
+  //uint8_t ledPos = beatsin8( tapTempo.getBPM(), 0, NUM_LEDS - 1 ) ;
+  uint8_t ledPos = beatsin8( 40, 0, NUM_LEDS - 1 ) ;
+  //uint8_t ledPos = lerp8by8( 0, NUM_LEDS-1, ease8InOutQuad beatsin8( 40 ))) ;
+  //uint8_t ledPos = beatsin8( tapTempo.getBPM(), 0, NUM_LEDS - 1 ) ;
+  leds[ledPos] = CRGB::White ;
+  FastLED.setBrightness( maxBright ) ;
+  FastLED.show();
+  fadeToBlackBy(leds, NUM_LEDS, 254);
+}
 #endif
