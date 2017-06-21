@@ -1,5 +1,3 @@
-#include <arduino.h>
-
 #define STEPS       3   // How wide the bands of color are.  1 = more like a gradient, 10 = more like stripes
 
 void FillLEDsFromPaletteColors(uint8_t paletteIndex ) {
@@ -43,13 +41,13 @@ void FillLEDsFromPaletteColors(uint8_t paletteIndex ) {
     colorIndex += STEPS;
   }
 
-  /* add extra glitter during "fast"
+  // add extra glitter during "fast"
   if ( taskCurrentPatternRun.getInterval() < 5000 ) {
-  addGlitter(250);
-} else {
-addGlitter(25);
-}
-*/
+    addGlitter(250);
+  } else {
+    addGlitter(25);
+  }
+
 
 FastLED.setBrightness( maxBright ) ;
 FastLED.show();
