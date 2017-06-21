@@ -6,34 +6,34 @@ void FillLEDsFromPaletteColors(uint8_t paletteIndex ) {
   static uint8_t startIndex = 1;  // initialize at start
   const int8_t flowDir = -1 ;
 
-if( firstPatternIteration ) {
-  startIndex = 1 ;
-  firstPatternIteration = false ;
-}
+  if( firstPatternIteration ) {
+    startIndex = 1 ;
+    firstPatternIteration = false ;   // reset flag
+  }
 
   const CRGBPalette16 palettes[] = { RainbowStripeColors_p,
-#ifdef RT_P_RB
-                                     RainbowColors_p,
-#endif
-#ifdef RT_P_OCEAN
-                                     OceanColors_p,
-#endif
-#ifdef RT_P_HEAT
-                                     HeatColors_p,
-#endif
-#ifdef RT_P_LAVA
-                                     LavaColors_p,
-#endif
-#ifdef RT_P_PARTY
-                                     PartyColors_p,
-#endif
-#ifdef RT_P_CLOUD
-                                     CloudColors_p,
-#endif
-#ifdef RT_P_FOREST
-                                     ForestColors_p
-#endif
-                                   } ;
+    #ifdef RT_P_RB
+    RainbowColors_p,
+    #endif
+    #ifdef RT_P_OCEAN
+    OceanColors_p,
+    #endif
+    #ifdef RT_P_HEAT
+    HeatColors_p,
+    #endif
+    #ifdef RT_P_LAVA
+    LavaColors_p,
+    #endif
+    #ifdef RT_P_PARTY
+    PartyColors_p,
+    #endif
+    #ifdef RT_P_CLOUD
+    CloudColors_p,
+    #endif
+    #ifdef RT_P_FOREST
+    ForestColors_p
+    #endif
+  } ;
   startIndex += flowDir ;
 
   uint8_t colorIndex = startIndex ;
@@ -44,18 +44,18 @@ if( firstPatternIteration ) {
   }
 
   /* add extra glitter during "fast"
-  if ( taskCurrentPatternSelect.getInterval() < 5000 ) {
-    addGlitter(250);
-  } else {
-    addGlitter(25);
-  }
-  */
+  if ( taskCurrentPatternRun.getInterval() < 5000 ) {
+  addGlitter(250);
+} else {
+addGlitter(25);
+}
+*/
 
-  FastLED.setBrightness( maxBright ) ;
-  FastLED.show();
+FastLED.setBrightness( maxBright ) ;
+FastLED.show();
 
-//  taskCurrentPatternSelect.setInterval( beatsin16( tapTempo.getBPM(), 1500, 50000) ) ; // microseconds
-  taskCurrentPatternSelect.setInterval( beatsin16( tapTempo.getBPM(), 5, 50 ) ) ;
+//  taskCurrentPatternRun.setInterval( beatsin16( tapTempo.getBPM(), 1500, 50000) ) ; // microseconds
+taskCurrentPatternRun.setInterval( beatsin16( tapTempo.getBPM(), 5, 50 ) ) ;
 }
 
 
@@ -88,7 +88,7 @@ void strobe1() {
   if ( tapTempo.beatProgress() > 0.95 ) {
     fill_solid(leds, NUM_LEDS, CRGB::White ); // yaw for color
   } else if ( tapTempo.beatProgress() > 0.80 and tapTempo.beatProgress() < 0.85 ) {
-//    fill_solid(leds, NUM_LEDS, CRGB::White );
+    //    fill_solid(leds, NUM_LEDS, CRGB::White );
   } else {
     fill_solid(leds, NUM_LEDS, CRGB::Black); // black
   }
@@ -258,12 +258,11 @@ void twirlers(uint8_t numTwirlers, bool opposing ) {
         leds[pos] = antiClockwiseColor ;
       }
     }
-
   }
   FastLED.setBrightness( maxBright ) ;
   FastLED.show();
-  taskCurrentPatternSelect.setInterval( 1 * TASK_RES_MULTIPLIER ) ;
-}
+  taskCurrentPatternRun.setInterval( 1 * TASK_RES_MULTIPLIER ) ;
+} // end twirlers()
 #endif
 
 
@@ -337,7 +336,7 @@ void heartbeat() {
     3,
   };
 
-#define NUM_STEPS (sizeof(hbTable)/sizeof(uint8_t *)) //array size
+  #define NUM_STEPS (sizeof(hbTable)/sizeof(uint8_t *)) //array size
 
   fill_solid(leds, NUM_LEDS, CRGB::Red);
   // beat8 generates index 0-255 (fract8) as per getBPM(). lerp8by8 interpolates that to array index:
@@ -482,7 +481,7 @@ void bounceBlend() {
   FastLED.setBrightness( maxBright ) ;
   FastLED.show();
 
-  if ( (taskCurrentPatternSelect.getRunCounter() % 10 ) == 0 ) {
+  if ( (taskCurrentPatternRun.getRunCounter() % 10 ) == 0 ) {
     startLed++ ;
     if ( startLed + 1 == NUM_LEDS ) startLed = 0  ;
   }
@@ -493,10 +492,10 @@ void bounceBlend() {
 
 
 /* juggle_pal
-   Originally by: Mark Kriegsman
-   Modified by: Andrew Tuline
-   Modified further by: Costyn van Dongen
-   Date: May, 2017
+Originally by: Mark Kriegsman
+Modified by: Andrew Tuline
+Modified further by: Costyn van Dongen
+Date: May, 2017
 */
 
 #ifdef RT_JUGGLE_PAL
@@ -547,7 +546,7 @@ void pulse3() {
   static uint8_t middle = 0 ;
 
   if ( width == 1 ) {
-    middle = taskCurrentPatternSelect.getRunCounter() % 60 + taskCurrentPatternSelect.getRunCounter() % 2;
+    middle = taskCurrentPatternRun.getRunCounter() % 60 + taskCurrentPatternRun.getRunCounter() % 2;
   }
 
   fill_solid(leds, NUM_LEDS, CRGB::Black);
@@ -590,9 +589,9 @@ void pulse5( uint8_t numPulses, boolean leadingDot) {
 #ifdef RT_THREE_SIN_PAL
 
 /* three_sin_pal_demo
-   By: Andrew Tuline
-   Date: March, 2015
-   3 sine waves, one for each colour. I didn't take this far, but you could change the beat frequency and so on. . .
+By: Andrew Tuline
+Date: March, 2015
+3 sine waves, one for each colour. I didn't take this far, but you could change the beat frequency and so on. . .
 */
 #define MAXCHANGES 24
 // Frequency, thus the distance between waves:
@@ -607,7 +606,7 @@ void threeSinPal() {
   static CRGBPalette16 currentPalette(CRGB::Black);
   static CRGBPalette16 targetPalette(PartyColors_p);
 
-  if ( taskCurrentPatternSelect.getRunCounter() % 2 == 0 ) {
+  if ( taskCurrentPatternRun.getRunCounter() % 2 == 0 ) {
     nblendPaletteTowardPalette( currentPalette, targetPalette, MAXCHANGES);
 
     wave1 += beatsin8(10, -4, 4);
@@ -658,9 +657,9 @@ void threeSinPal() {
 #ifdef RT_CYLON
 void cylon() {
   //uint8_t ledPos = beatsin8( tapTempo.getBPM(), 0, NUM_LEDS - 1 ) ;
-  uint8_t ledPos = beatsin8( 40, 0, NUM_LEDS - 1 ) ;
+  //uint8_t ledPos = beatsin8( 40, 0, NUM_LEDS - 1 ) ;
   //uint8_t ledPos = lerp8by8( 0, NUM_LEDS-1, ease8InOutQuad beatsin8( 40 ))) ;
-  //uint8_t ledPos = beatsin8( tapTempo.getBPM(), 0, NUM_LEDS - 1 ) ;
+  uint8_t ledPos = beatsin8( tapTempo.getBPM(), 0, NUM_LEDS - 1 ) ;
   leds[ledPos] = CRGB::White ;
   FastLED.setBrightness( maxBright ) ;
   FastLED.show();

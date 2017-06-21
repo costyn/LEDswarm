@@ -13,12 +13,12 @@ uint32_t getMasterNodeId() {
 void checkMastership() {
   if( mesh.getNodeId() == getMasterNodeId() ) {
     role = "MASTER";
-    taskSendBeatSync.enableIfNot() ;
+    taskSendMessage.enableIfNot() ;
     taskCheckButtonPress.enableIfNot() ;
     taskSelectNextPattern.enableIfNot() ;
   } else {
     role = "SLAVE" ;
-    taskSendBeatSync.disable() ;        // Only MASTER sends broadcast
+    taskSendMessage.disable() ;        // Only MASTER sends broadcast
     taskCheckButtonPress.disable() ;    // Slaves can't set BPM
     taskSelectNextPattern.disable() ;   // Slaves wait for instructions from the MASTER
   }
@@ -31,18 +31,9 @@ void receivedCallback( uint32_t from, String &msg ) {
     DynamicJsonBuffer jsonBuffer;
     JsonObject& root  = jsonBuffer.parseObject(msg);
 
-//    if( root["currentBeatLength"] ) {  // Check if it's a sync msg
-    currentBeatLength = root["currentBeatLength"].as<uint32_t>() ;
-//      Serial.printf("SLAVE %u: from: %u \tBL: %u\n", mesh.getNodeTime(), from, currentBeatLength  );
-    nextPattern   = root["nextPattern"].as<uint8_t>() ;
-
-    // TODO: make this check a little less strict; if it's within x microseconds, it's in SYNC
-    if( tapTimer != root["taptimer"].as<uint32_t>() ) {
-      tapTimer    = root["taptimer"].as<uint32_t>() ;
-      Serial.printf("SLAVE %u: Unsynced with MASTER. Next tapTime (from master): %u.\tPattern: %u\n", mesh.getNodeTime(), tapTimer, nextPattern ) ;
-    } else {
-      Serial.printf("SLAVE %u: In SYNC with MASTER. Next tapTime: %u\tPattern: %u\n", mesh.getNodeTime(), tapTimer, nextPattern );
-    }
+    currentBPM = root["currentBPM"].as<uint32_t>() ;
+    currentPattern   = root["currentPattern"].as<uint8_t>() ;
+    Serial.printf("SLAVE %u: \tBPM: %u\t Pattern: %u\n", mesh.getNodeTime(), currentBPM, currentPattern );
 
   } else {
     Serial.printf("received msg from %u but I'm the master\n", from) ;
