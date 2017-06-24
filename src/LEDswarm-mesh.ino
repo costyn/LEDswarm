@@ -31,12 +31,23 @@ void receivedCallback( uint32_t from, String &msg ) {
     DynamicJsonBuffer jsonBuffer;
     JsonObject& root  = jsonBuffer.parseObject(msg);
 
-    currentBPM = root["currentBPM"].as<uint32_t>() ;
-    currentPattern   = root["currentPattern"].as<uint8_t>() ;
-    Serial.printf("SLAVE %u: \tBPM: %u\t Pattern: %u\n", mesh.getNodeTime(), currentBPM, currentPattern );
+    if( root["currentBPM"] ) {
+      currentBPM = root["currentBPM"].as<uint32_t>() ;
+      currentPattern   = root["currentPattern"].as<uint8_t>() ;
+      Serial.printf("%s %u: \tBPM: %u\t Pattern: %u\n", role.c_str(), mesh.getNodeTime(), currentBPM, currentPattern );
+    }
 
-  } else {
-    Serial.printf("received msg from %u but I'm the master\n", from) ;
+    if( root["runOnce"] ) {
+      executeOneCycle = true ;
+    }
+
+  } else if( role == "MASTER") {
+    DynamicJsonBuffer jsonBuffer;
+    JsonObject& root  = jsonBuffer.parseObject(msg);
+
+    uint32_t patternRunTime = root["patternRunTime"].as<uint32_t>() ;
+    Serial.printf("%s %u (slave end time): \tBPM: %u\t Pattern: %u\tRunTime: %u\n", role.c_str(), mesh.getNodeTime(), currentBPM, currentPattern, patternRunTime );
+    taskRunPatternOnNode.forceNextIteration(); // Send message to next SLAVE
   }
 
   Serial.println(); // whitespace for easier reading

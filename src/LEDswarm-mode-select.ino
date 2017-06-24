@@ -195,81 +195,81 @@ void currentPatternRun() {
     #ifdef RT_FADE_GLITTER
   } else if ( strcmp(routines[currentPattern], "fglitter") == 0 ) {
     fadeGlitter() ;
-    taskCurrentPatternRun.setInterval( map( constrain( activityLevel(), 0, 4000), 0, 4000, 20, 5 ) * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( map( constrain( activityLevel(), 0, 4000), 0, 4000, 20, 5 ) * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_DISCO_GLITTER
   } else if ( strcmp(routines[currentPattern], "dglitter") == 0 ) {
     discoGlitter() ;
-    taskCurrentPatternRun.setInterval( map( constrain( activityLevel(), 0, 2500), 0, 2500, 40, 2 ) * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( map( constrain( activityLevel(), 0, 2500), 0, 2500, 40, 2 ) * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_GLED
     // Gravity LED
   } else if ( strcmp(routines[currentPattern], "gled") == 0 ) {
     gLed() ;
-    taskCurrentPatternRun.setInterval( 5 * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( 5 * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_BLACK
   } else if ( strcmp(routines[currentPattern], "black") == 0 ) {
     fill_solid(leds, NUM_LEDS, CRGB::Black);
     FastLED.show();
-    taskCurrentPatternRun.setInterval( 500 * TASK_RES_MULTIPLIER ) ;  // long because nothing is going on anyways.
+    taskCurrentPatternRun.setInterval( 500 * TASK_MILLISECOND ) ;  // long because nothing is going on anyways.
     #endif
 
     #ifdef RT_RACERS
   } else if ( strcmp(routines[currentPattern], "racers") == 0 ) {
     racingLeds() ;
-    taskCurrentPatternRun.setInterval( 8 * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( 8 * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_WAVE
   } else if ( strcmp(routines[currentPattern], "wave") == 0 ) {
     waveYourArms() ;
-    taskCurrentPatternRun.setInterval( 15 * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( 15 * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_SHAKE_IT
   } else if ( strcmp(routines[currentPattern], "shakeit") == 0 ) {
     shakeIt() ;
-    taskCurrentPatternRun.setInterval( 8 * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( 8 * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_STROBE1
   } else if ( strcmp(routines[currentPattern], "strobe1") == 0 ) {
     strobe1() ;
-    taskCurrentPatternRun.setInterval( 1 * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( 1 * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_STROBE2
   } else if ( strcmp(routines[currentPattern], "strobe2") == 0 ) {
     strobe2() ;
-    taskCurrentPatternRun.setInterval( 10 * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( 10 * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_HEARTBEAT
   } else if ( strcmp(routines[currentPattern], "heartbeat") == 0 ) {
     heartbeat() ;
-    taskCurrentPatternRun.setInterval( 10 * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( 10 * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_VUMETER
   } else if ( strcmp(routines[currentPattern], "vumeter") == 0 ) {
     vuMeter() ;
-    taskCurrentPatternRun.setInterval( 8 * TASK_RES_MULTIPLIER) ;
+    taskCurrentPatternRun.setInterval( 8 * TASK_MILLISECOND) ;
     #endif
 
     #ifdef RT_FASTLOOP
   } else if ( strcmp(routines[currentPattern], "fastloop") == 0 ) {
-    taskCurrentPatternRun.setInterval( 10 * TASK_RES_MULTIPLIER) ;
+    taskCurrentPatternRun.setInterval( 10 * TASK_MILLISECOND) ;
     fastLoop( false ) ;
     #endif
 
     #ifdef RT_FASTLOOP2
   } else if ( strcmp(routines[currentPattern], "fastloop2") == 0 ) {
     fastLoop( true ) ;
-    taskCurrentPatternRun.setInterval( 10 * TASK_RES_MULTIPLIER) ;
+    taskCurrentPatternRun.setInterval( 10 * TASK_MILLISECOND) ;
     #endif
 
     #ifdef RT_PENDULUM
@@ -282,7 +282,7 @@ void currentPatternRun() {
     #ifdef RT_BOUNCEBLEND
   } else if ( strcmp(routines[currentPattern], "bounceblend") == 0 ) {
     bounceBlend() ;
-    taskCurrentPatternRun.setInterval( 10 * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( 10 * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_JUGGLE_PAL
@@ -295,44 +295,44 @@ void currentPatternRun() {
     #ifdef RT_NOISE_LAVA
   } else if ( strcmp(routines[currentPattern], "noise_lava") == 0 ) {
     fillnoise8( 0, beatsin8( tapTempo.getBPM(), 1, 25), 30, 1); // pallette, speed, scale, loop
-    taskCurrentPatternRun.setInterval( 10 * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( 10 * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_NOISE_PARTY
   } else if ( strcmp(routines[currentPattern], "noise_party") == 0 ) {
     fillnoise8( 1, beatsin8( tapTempo.getBPM(), 1, 25), 30, 1); // pallette, speed, scale, loop
     //    taskCurrentPatternRun.setInterval( beatsin16( tapTempo.getBPM(), 2000, 50000) ) ;
-    taskCurrentPatternRun.setInterval( 10 * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( 10 * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_QUAD_STROBE
   } else if ( strcmp(routines[currentPattern], "quadstrobe") == 0 ) {
     quadStrobe();
-    taskCurrentPatternRun.setInterval( (60000 / (tapTempo.getBPM() * 4)) * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( (60000 / (tapTempo.getBPM() * 4)) * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_PULSE_3
   } else if ( strcmp(routines[currentPattern], "pulse3") == 0 ) {
     pulse3();
-    taskCurrentPatternRun.setInterval( 10 * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( 10 * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_PULSE_5
   } else if ( strcmp(routines[currentPattern], "pulse5") == 0 ) {
     pulse5(3, false);
-    taskCurrentPatternRun.setInterval( 10 * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( 10 * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_THREE_SIN_PAL
   } else if ( strcmp(routines[currentPattern], "tsp") == 0 ) {
     threeSinPal() ;
-    taskCurrentPatternRun.setInterval( 10 * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( 10 * TASK_MILLISECOND ) ;
     #endif
 
     #ifdef RT_CYLON
   } else if ( strcmp(routines[currentPattern], "cylon") == 0 ) {
     cylon() ;
-    taskCurrentPatternRun.setInterval( 1 * TASK_RES_MULTIPLIER ) ;
+    taskCurrentPatternRun.setInterval( 1 * TASK_MILLISECOND ) ;
     #endif
 
   }

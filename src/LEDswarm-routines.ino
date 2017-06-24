@@ -42,7 +42,7 @@ void FillLEDsFromPaletteColors(uint8_t paletteIndex ) {
   }
 
   // add extra glitter during "fast"
-  if ( taskCurrentPatternRun.getInterval() < 5000 ) {
+  if ( taskCurrentPatternRun.getInterval() < 10 ) {
     addGlitter(250);
   } else {
     addGlitter(25);
@@ -259,7 +259,7 @@ void twirlers(uint8_t numTwirlers, bool opposing ) {
   }
   FastLED.setBrightness( maxBright ) ;
   FastLED.show();
-  taskCurrentPatternRun.setInterval( 1 * TASK_RES_MULTIPLIER ) ;
+  taskCurrentPatternRun.setInterval( 1 * TASK_MILLISECOND ) ;
 } // end twirlers()
 #endif
 

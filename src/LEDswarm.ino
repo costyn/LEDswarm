@@ -12,9 +12,9 @@
 #include "FastLED.h"
 
 #ifdef    _TASK_MICRO_RES
-#define   TASK_RES_MULTIPLIER   1000
+#define   TASK_MILLISECOND   1000
 #else
-#define   TASK_RES_MULTIPLIER   1
+#define   TASK_MILLISECOND   1
 #endif
 
 #define   BUTTON_PIN        0
@@ -39,6 +39,7 @@ bool     firstPatternIteration = true ;    // if this pattern is being run for t
 painlessMesh  mesh;
 SimpleList<uint32_t> nodes;
 String role = "MASTER" ; // default start out as master unless told otherwise
+uint32_t activeSlave ;
 
 // BPM variables
 ArduinoTapTempo tapTempo;
@@ -52,7 +53,7 @@ Task taskCheckButtonPress( TASK_CHECK_BUTTON_PRESS_INTERVAL, TASK_FOREVER, &chec
 Task taskCurrentPatternRun( CURRENTPATTERN_SELECT_DEFAULT_INTERVAL, TASK_FOREVER, &currentPatternRun);
 Task taskSendMessage( TASK_SECOND * 5, TASK_FOREVER, &sendMessage ); // check every second if we have a new BPM / pattern to send
 Task taskSelectNextPattern( TASK_SECOND * 15, TASK_FOREVER, &selectNextPattern);  // switch to next pattern every 15 seconds
-
+Task taskRunPatternOnNode( TASK_IMMEDIATE, TASK_ONCE, &runPatternOnNode );
 
 void setup() {
   Serial.begin(115200);
@@ -149,3 +150,22 @@ uint32_t get_millisecond_timer() {
 // MASTER shifts node off list and adds it to the end
 // Node x sends back timing for pattern
 // MASTER keeps running average for pattern, sends out new patterns on time to next node
+
+uint32_t runPatternOnNode() {
+  static uint32_t sendTime ;
+  auto node = nodes.begin();
+  nodes.pop_front();
+  nodes.push_back(node);
+
+  static DynamicJsonBuffer jsonBuffer;
+  static JsonObject& msg = jsonBuffer.createObject();
+
+  msg["runOnce"] = currentPattern;
+
+  String str;
+  msg.printTo(str);
+  mesh.sendSingle(node, str);
+  sendTime = mesh.getNodeTime() ;
+  Serial.printf("%s %u (slave start time): \tBPM: %u\t Pattern: %u\n", role.c_str(), sendTime, currentBPM, currentPattern );
+  activeSlave = node ;  // keep track of which SLAVE is currently running a pattern
+}
