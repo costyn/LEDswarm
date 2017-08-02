@@ -1,28 +1,37 @@
-uint32_t getMasterNodeId() {
-  uint32_t lowestId = UINT32_MAX ;
+void checkMastership() {
+  uint32_t masterNodeId = UINT32_MAX ;
+  nodes = mesh.getNodeList();
+  nodes.push_back(mesh.getNodeId()); // add ourselves to the nodes list
+
   SimpleList<uint32_t>::iterator node = nodes.begin();
+
+  // Print out a list of nodes and check which has the lowest Node ID:
+  Serial.printf("Node list: ");
+
+
   while( node != nodes.end() ) {
-    if( *node < lowestId ) {
-      lowestId = *node ;
+    if( *node < masterNodeId ) {
+      masterNodeId = *node ;
     }
+    Serial.printf(" %u", *node);
     node++;
   }
-  return lowestId ;
-}
+  Serial.printf(" (%d nodes)\n", nodes.size());
 
-void checkMastership() {
-  if( mesh.getNodeId() == getMasterNodeId() ) {
+  if( mesh.getNodeId() == masterNodeId ) {
     role = "MASTER";
     taskSendMessage.enableIfNot() ;
     taskCheckButtonPress.enableIfNot() ;
     taskSelectNextPattern.enableIfNot() ;
+    Serial.printf("%s %u: checkMastership(); I am MASTER\n", role.c_str(), mesh.getNodeTime() );
   } else {
     role = "SLAVE" ;
-    taskSendMessage.disable() ;        // Only MASTER sends broadcast
+    taskSendMessage.disable() ;         // Only MASTER sends broadcast
     taskCheckButtonPress.disable() ;    // Slaves can't set BPM
     taskSelectNextPattern.disable() ;   // Slaves wait for instructions from the MASTER
+    Serial.printf("%s %u: checkMastership(); I am SLAVE\n", role.c_str(), mesh.getNodeTime() );
   }
-}
+} // end checkMastership()
 
 
 void receivedCallback( uint32_t from, String &msg ) {
@@ -32,14 +41,14 @@ void receivedCallback( uint32_t from, String &msg ) {
     JsonObject& root  = jsonBuffer.parseObject(msg);
 
     if( root["currentBPM"] ) {
-      currentBPM = root["currentBPM"].as<uint32_t>() ;
+      currentBPM = root["currentBPM"].as<uint32_t>() ;  // TODO: set BPM in tapTempo object
       currentPattern   = root["currentPattern"].as<uint8_t>() ;
       Serial.printf("%s %u: \tBPM: %u\t Pattern: %u\n", role.c_str(), mesh.getNodeTime(), currentBPM, currentPattern );
     }
 
-    if( root["runOnce"] ) {
-      executeOneCycle = true ;
-    }
+    // if( root["runOnce"] ) {
+    //   executeOneCycle = true ;
+    // }
 
   } else if( role == "MASTER") {
     DynamicJsonBuffer jsonBuffer;
@@ -47,42 +56,25 @@ void receivedCallback( uint32_t from, String &msg ) {
 
     uint32_t patternRunTime = root["patternRunTime"].as<uint32_t>() ;
     Serial.printf("%s %u (slave end time): \tBPM: %u\t Pattern: %u\tRunTime: %u\n", role.c_str(), mesh.getNodeTime(), currentBPM, currentPattern, patternRunTime );
-    taskRunPatternOnNode.forceNextIteration(); // Send message to next SLAVE
+    //      taskRunPatternOnNode.forceNextIteration(); // Send message to next SLAVE
   }
-
   Serial.println(); // whitespace for easier reading
-
-}
+} // end receivedCallback()
 
 
 
 void newConnectionCallback(uint32_t nodeId) {
-  Serial.printf("-- > startHere: New Connection, nodeId = %u\n", nodeId);
-  nodes = mesh.getNodeList();
-  nodes.push_back(mesh.getNodeId()); // add ourselves to the nodes list
+  Serial.printf("%s %u: New Connection from nodeId = %u\n", role.c_str(), mesh.getNodeTime(), nodeId);
   checkMastership() ;
 }
 
 void changedConnectionCallback() {
-  Serial.printf("Changed connections %s\n", mesh.subConnectionJson().c_str());
-
-  nodes = mesh.getNodeList();
-  nodes.push_back(mesh.getNodeId()); // add ourselves to the nodes list
+  Serial.printf("%s %u: Changed connections %s\n", role.c_str(), mesh.getNodeTime(), mesh.subConnectionJson().c_str());
   checkMastership() ;
-
-  Serial.printf("Num nodes: %d\n", nodes.size());
-  Serial.printf("Connection list: ");
-
-  SimpleList<uint32_t>::iterator node = nodes.begin();
-  while (node != nodes.end()) {
-    Serial.printf(" %u", *node);
-    node++;
-  }
-  Serial.println();
 }
 
 void nodeTimeAdjustedCallback(int32_t offset) {
-  Serial.printf("Adjusted time %u. Offset = %d\n", mesh.getNodeTime(), offset);
+  Serial.printf("%s: Adjusted time %u. Offset = %d\n", role.c_str(), mesh.getNodeTime(), offset);
 }
 
 void delayReceivedCallback(uint32_t from, int32_t delay) {

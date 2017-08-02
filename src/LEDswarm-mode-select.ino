@@ -347,6 +347,6 @@ void selectNextPattern() {
   }
 
   if( role == "MASTER" ) {
-     taskSendMessage.forceNextIteration(); // Schedule next iteration immediately, for sending a new pattern
+     taskSendMessage.forceNextIteration(); // Schedule next iteration immediately, for sending a new pattern msg to slaves
   }
 }

@@ -506,7 +506,7 @@ void jugglePal() {                                             // A time (rather
   static uint8_t     curhue =   0;                                     // The current hue
   static uint8_t   thisbeat =   35;                                     // Higher = faster movement.
 
-  uint8_t secondHand = (millis() / 1000) % 60;                // Change '60' to a different value to change duration of the loop (also change timings below)
+  uint8_t secondHand = ( get_millisecond_timer() / 1000) % 60;                // Change '60' to a different value to change duration of the loop (also change timings below)
   static uint8_t lastSecond = 99;                             // This is our 'debounce' variable.
 
   if (lastSecond != secondHand) {                             // Debounce to make sure we're not repeating an assignment.
@@ -617,7 +617,7 @@ void threeSinPal() {
     }
   }
 
-  uint8_t secondHand = (millis() / 1000) % 60;
+  uint8_t secondHand = (get_millisecond_timer() / 1000) % 60;
   static uint8_t lastSecond = 99;
 
   if ( lastSecond != secondHand) {
@@ -659,8 +659,10 @@ void cylon() {
   //uint8_t ledPos = lerp8by8( 0, NUM_LEDS-1, ease8InOutQuad beatsin8( 40 ))) ;
   uint8_t ledPos = beatsin8( tapTempo.getBPM(), 0, NUM_LEDS - 1 ) ;
   leds[ledPos] = CRGB::White ;
+  uint8_t ledPos2 = beatsin8( tapTempo.getBPM(), 0, NUM_LEDS - 1, 0, 50 ) ;
+  leds[ledPos2] = CRGB::Red ;
   FastLED.setBrightness( maxBright ) ;
   FastLED.show();
-  fadeToBlackBy(leds, NUM_LEDS, 254);
+//  fadeToBlackBy(leds, NUM_LEDS, 255);
 }
 #endif

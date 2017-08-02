@@ -1,6 +1,9 @@
 // TODO: convert Serial.printfs and println's to DEBUG statements we can turn on/off
+// TODO: sprinkle yield() around
 
 //#define _TASK_MICRO_RES     // Turn on microsecond timing - painlessMesh does not support it (yet)
+
+#define DEBUG
 
 #define TIME_SYNC_INTERVAL  60000000  // Mesh time resync period, in us. 1 minute
 #define FASTLED_ALLOW_INTERRUPTS 0    // Allow interrupts, to prevent wifi weirdness
@@ -23,14 +26,14 @@
 #define   MESH_PASSWORD     "somethingSneaky"
 #define   MESH_PORT         5555
 
-#define   DEFAULT_PATTERN   0
+#define   DEFAULT_PATTERN   6
 #define   DEFAULT_BRIGHTNESS  80  // 0-255, higher number is brighter.
-#define   NUM_LEDS          30
+#define   NUM_LEDS          20
 #define   DATA_PIN          2
 
 // LED variables
-CRGB leds[NUM_LEDS];
-uint8_t maxBright = DEFAULT_BRIGHTNESS ;
+CRGB      leds[NUM_LEDS];
+uint8_t   maxBright = DEFAULT_BRIGHTNESS ;
 uint8_t  currentPattern = DEFAULT_PATTERN ; // Which mode do we start with
 uint8_t  nextPattern    = currentPattern ;
 bool     firstPatternIteration = true ;    // if this pattern is being run for the first time
@@ -53,10 +56,10 @@ Task taskCheckButtonPress( TASK_CHECK_BUTTON_PRESS_INTERVAL, TASK_FOREVER, &chec
 Task taskCurrentPatternRun( CURRENTPATTERN_SELECT_DEFAULT_INTERVAL, TASK_FOREVER, &currentPatternRun);
 Task taskSendMessage( TASK_SECOND * 5, TASK_FOREVER, &sendMessage ); // check every second if we have a new BPM / pattern to send
 Task taskSelectNextPattern( TASK_SECOND * 15, TASK_FOREVER, &selectNextPattern);  // switch to next pattern every 15 seconds
-Task taskRunPatternOnNode( TASK_IMMEDIATE, TASK_ONCE, &runPatternOnNode );
+//Task taskRunPatternOnNode( TASK_IMMEDIATE, TASK_ONCE, &runPatternOnNode );
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(76800);
   delay(1000); // Startup delay; let things settle down
 
   //mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on
@@ -68,7 +71,7 @@ void setup() {
   mesh.onNodeTimeAdjusted(&nodeTimeAdjustedCallback);
   mesh.onNodeDelayReceived(&delayReceivedCallback);
 
-  nodes.push_back( mesh.getNodeId() ) ; // add our own ID to the list of nodes
+  // nodes.push_back( mesh.getNodeId() ) ; // add our own ID to the list of nodes
 
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
 
@@ -83,10 +86,12 @@ void setup() {
 
   Serial.print("Starting up... I am: ");
   Serial.println(mesh.getNodeId()) ;
+  checkMastership() ;
 } // end setup()
 
 
 void loop() {
+  yield() ;
   mesh.update();
 } // end loop()
 
@@ -140,7 +145,7 @@ void checkButtonPress() {
 } // end checkButtonPress()
 
 // This function is called by FastLED inside lib8tion.h. Requests it to use mesg.getNodeTime instead of internal millis() timer.
-// Makes every synced!
+// Makes every pattern on each node synced!
 uint32_t get_millisecond_timer() {
    return mesh.getNodeTime()/1000 ;
 }
@@ -151,21 +156,24 @@ uint32_t get_millisecond_timer() {
 // Node x sends back timing for pattern
 // MASTER keeps running average for pattern, sends out new patterns on time to next node
 
-uint32_t runPatternOnNode() {
-  static uint32_t sendTime ;
-  auto node = nodes.begin();
-  nodes.pop_front();
-  nodes.push_back(node);
+// uint32_t runPatternOnNode() {
+//   static uint32_t sendTime ;
+//   auto node = nodes.begin();
+//   nodes.pop_front();
+//   nodes.push_back(node);
+//
+//   static DynamicJsonBuffer jsonBuffer;
+//   static JsonObject& msg = jsonBuffer.createObject();
+//
+//   msg["runOnce"] = currentPattern;
+//
+//   String str;
+//   msg.printTo(str);
+//   mesh.sendSingle(node, str);
+//   sendTime = mesh.getNodeTime() ;
+//   Serial.printf("%s %u (slave start time): \tBPM: %u\t Pattern: %u\n", role.c_str(), sendTime, currentBPM, currentPattern );
+//   activeSlave = node ;  // keep track of which SLAVE is currently running a pattern
+// }
 
-  static DynamicJsonBuffer jsonBuffer;
-  static JsonObject& msg = jsonBuffer.createObject();
 
-  msg["runOnce"] = currentPattern;
-
-  String str;
-  msg.printTo(str);
-  mesh.sendSingle(node, str);
-  sendTime = mesh.getNodeTime() ;
-  Serial.printf("%s %u (slave start time): \tBPM: %u\t Pattern: %u\n", role.c_str(), sendTime, currentBPM, currentPattern );
-  activeSlave = node ;  // keep track of which SLAVE is currently running a pattern
-}
+// OPtion B: define CRGB array for the number of LEDS
