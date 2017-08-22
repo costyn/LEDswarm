@@ -657,12 +657,12 @@ void cylon() {
   //uint8_t ledPos = beatsin8( tapTempo.getBPM(), 0, NUM_LEDS - 1 ) ;
   //uint8_t ledPos = beatsin8( 40, 0, NUM_LEDS - 1 ) ;
   //uint8_t ledPos = lerp8by8( 0, NUM_LEDS-1, ease8InOutQuad beatsin8( 40 ))) ;
-  uint8_t ledPos = beatsin8( tapTempo.getBPM(), 0, NUM_LEDS - 1 ) ;
-  leds[ledPos] = CRGB::White ;
-  uint8_t ledPos2 = beatsin8( tapTempo.getBPM(), 0, NUM_LEDS - 1, 0, 50 ) ;
+  uint8_t ledPos = beatsin8( tapTempo.getBPM()/2, 0, NUM_LEDS - 1 ) ;
+  leds[ledPos] = CRGB::Orange ;
+  uint8_t ledPos2 = beatsin8( tapTempo.getBPM()/2, 0, NUM_LEDS - 1, 0, 40 ) ;
   leds[ledPos2] = CRGB::Red ;
   FastLED.setBrightness( maxBright ) ;
   FastLED.show();
-//  fadeToBlackBy(leds, NUM_LEDS, 255);
+  fadeToBlackBy(leds, NUM_LEDS, 255);
 }
 #endif

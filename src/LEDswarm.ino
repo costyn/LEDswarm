@@ -1,5 +1,4 @@
 // TODO: convert Serial.printfs and println's to DEBUG statements we can turn on/off
-// TODO: sprinkle yield() around
 
 //#define _TASK_MICRO_RES     // Turn on microsecond timing - painlessMesh does not support it (yet)
 
@@ -22,7 +21,7 @@
 
 #define   BUTTON_PIN        0
 
-#define   MESH_PREFIX       "LEDforge.com LEDswarm"
+#define   MESH_PREFIX       "LEDforge"
 #define   MESH_PASSWORD     "somethingSneaky"
 #define   MESH_PORT         5555
 
@@ -63,7 +62,8 @@ void setup() {
   delay(1000); // Startup delay; let things settle down
 
   //mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on
-  mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION );  // set before init() so that you can see startup messages
+  //mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | DEBUG );  // set before init() so that you can see startup messages
+  mesh.setDebugMsgTypes( ERROR | STARTUP );  // set before init() so that you can see startup messages
   mesh.init( MESH_PREFIX, MESH_PASSWORD, MESH_PORT );
   mesh.onReceive(&receivedCallback);
   mesh.onNewConnection(&newConnectionCallback);
