@@ -1,4 +1,4 @@
-#include <arduino.h>
+#include <Arduino.h>
 
 void fadeall(uint8_t fade_all_speed) {
   for (uint8_t i = 0; i < NUM_LEDS; i++) {
