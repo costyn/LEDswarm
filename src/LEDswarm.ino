@@ -9,7 +9,8 @@
 // #define DEBUG
 
 #define TIME_SYNC_INTERVAL  60000000  // Mesh time resync period, in us. 1 minute
-#define FASTLED_ALLOW_INTERRUPTS 0    // Allow interrupts, to prevent wifi weirdness
+#define FASTLED_ALLOW_INTERRUPTS 1    // Allow interrupts, to prevent wifi weirdness ; https://github.com/FastLED/FastLED/wiki/Interrupt-problems
+#define INTERRUPT_THRESHOLD 1   // also see https://github.com/FastLED/FastLED/issues/367
 #define USE_GET_MILLISECOND_TIMER     // Define our own millis() source for FastLED beat functions: see get_millisecond_timer()
 
 #include "LEDswarm.h"
@@ -23,6 +24,7 @@
 #define   TASK_MILLISECOND   1
 #endif
 
+
 #define   BUTTON_PIN        0
 
 #define   MESH_PREFIX       "LEDforge"
@@ -30,9 +32,19 @@
 #define   MESH_PORT         5555
 
 #define   DEFAULT_PATTERN   1
-#define   DEFAULT_BRIGHTNESS  255  // 0-255, higher number is brighter.
-#define   NUM_LEDS          63
-#define   DATA_PIN          2
+#define   DEFAULT_BRIGHTNESS  100  // 0-255, higher number is brighter.
+#define   NUM_LEDS          40
+
+#define COLOR_ORDER
+
+#ifdef   APA_102
+#define MY_DATA_PIN  13
+#define MY_CLOCK_PIN 14
+#define COLOR_ORDER BGR
+#else
+#define  MY_DATA_PIN          15
+#define COLOR_ORDER GRB
+#endif
 
 // LED variables
 CRGB      leds[NUM_LEDS];
@@ -54,7 +66,7 @@ uint32_t currentBPM = 120 ; // default BPM of ArduinoTapTempo
 
 // Task variables
 #define TASK_CHECK_BUTTON_PRESS_INTERVAL    10   // in milliseconds
-#define CURRENTPATTERN_SELECT_DEFAULT_INTERVAL     50   // default scheduling time for currentPatternSELECT, in milliseconds
+#define CURRENTPATTERN_SELECT_DEFAULT_INTERVAL     1   // default scheduling time for currentPatternSELECT, in milliseconds
 Task taskCheckButtonPress( TASK_CHECK_BUTTON_PRESS_INTERVAL, TASK_FOREVER, &checkButtonPress);
 Task taskCurrentPatternRun( CURRENTPATTERN_SELECT_DEFAULT_INTERVAL, TASK_FOREVER, &currentPatternRun);
 Task taskSendMessage( TASK_SECOND * 5, TASK_FOREVER, &sendMessage ); // check every second if we have a new BPM / pattern to send
@@ -77,7 +89,11 @@ void setup() {
 
   // nodes.push_back( mesh.getNodeId() ) ; // add our own ID to the list of nodes
 
-  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+#ifdef APA_102
+  FastLED.addLeds<APA102, MY_DATA_PIN, MY_CLOCK_PIN, COLOR_ORDER, DATA_RATE_MHZ(12)>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+#else
+  FastLED.addLeds<NEOPIXEL, MY_DATA_PIN>(leds, NUM_LEDS);
+#endif
 
   mesh.scheduler.addTask( taskSendMessage );
   mesh.scheduler.addTask( taskCheckButtonPress );
@@ -85,10 +101,10 @@ void setup() {
   //mesh.scheduler.addTask( taskSelectNextPattern );
   taskCheckButtonPress.enable() ;
   taskCurrentPatternRun.enable() ;
-//  taskSelectNextPattern.enable() ;
+  taskSelectNextPattern.enable() ;
 
 
-  Serial.print("Starting up... I am: ");
+  Serial.print("Starting up... my Node ID is: ");
   Serial.println(mesh.getNodeId()) ;
   checkMastership() ;
 } // end setup()
@@ -149,8 +165,8 @@ void checkButtonPress() {
   }
 } // end checkButtonPress()
 
-// This function is called by FastLED inside lib8tion.h. Requests it to use mesg.getNodeTime instead of internal millis() timer.
-// Makes every pattern on each node synced!
+// @Override This function is called by FastLED inside lib8tion.h. Requests it to use mesg.getNodeTime instead of internal millis() timer.
+// Makes every pattern on each node synced!! So awesome!
 uint32_t get_millisecond_timer() {
    return mesh.getNodeTime()/1000 ;
 }
