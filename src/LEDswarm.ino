@@ -1,8 +1,12 @@
 // TODO: convert Serial.printfs and println's to DEBUG statements we can turn on/off
+// UI/UX:
+// * Set BPM
+// * Set Pattern
+// * Set Brightness
 
 //#define _TASK_MICRO_RES     // Turn on microsecond timing - painlessMesh does not support it (yet)
 
-#define DEBUG
+// #define DEBUG
 
 #define TIME_SYNC_INTERVAL  60000000  // Mesh time resync period, in us. 1 minute
 #define FASTLED_ALLOW_INTERRUPTS 0    // Allow interrupts, to prevent wifi weirdness
@@ -25,9 +29,9 @@
 #define   MESH_PASSWORD     "somethingSneaky"
 #define   MESH_PORT         5555
 
-#define   DEFAULT_PATTERN   6
-#define   DEFAULT_BRIGHTNESS  80  // 0-255, higher number is brighter.
-#define   NUM_LEDS          20
+#define   DEFAULT_PATTERN   1
+#define   DEFAULT_BRIGHTNESS  255  // 0-255, higher number is brighter.
+#define   NUM_LEDS          63
 #define   DATA_PIN          2
 
 // LED variables
@@ -58,7 +62,7 @@ Task taskSelectNextPattern( TASK_SECOND * 15, TASK_FOREVER, &selectNextPattern);
 //Task taskRunPatternOnNode( TASK_IMMEDIATE, TASK_ONCE, &runPatternOnNode );
 
 void setup() {
-  Serial.begin(76800);
+  Serial.begin(115200);
   delay(1000); // Startup delay; let things settle down
 
   //mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on
@@ -78,10 +82,10 @@ void setup() {
   mesh.scheduler.addTask( taskSendMessage );
   mesh.scheduler.addTask( taskCheckButtonPress );
   mesh.scheduler.addTask( taskCurrentPatternRun );
-  mesh.scheduler.addTask( taskSelectNextPattern );
+  //mesh.scheduler.addTask( taskSelectNextPattern );
   taskCheckButtonPress.enable() ;
   taskCurrentPatternRun.enable() ;
-  taskSelectNextPattern.enable() ;
+//  taskSelectNextPattern.enable() ;
 
 
   Serial.print("Starting up... I am: ");
@@ -99,18 +103,17 @@ void loop() {
 // Better to have static and keep the memory allocated or not??
 void sendMessage() {
   if( ! tapTempo.isChainActive() or (currentPattern != nextPattern) ) {
-    static DynamicJsonBuffer jsonBuffer;
-    static JsonObject& msg = jsonBuffer.createObject();
+    static StaticJsonDocument<256> msg;
 
     currentPattern = nextPattern ;       // update our own running pattern
     currentBPM     = tapTempo.getBPM() ; // update our BPM with (possibly new) BPM
     newBPMSet      = false ;            // reset the flag
 
-    msg["currentBPM"] = currentBPM;
+    msg["currentBPM"]     = currentBPM;
     msg["currentPattern"] = currentPattern ;
 
     String str;
-    msg.printTo(str);
+    serializeJson(msg, str);
     mesh.sendBroadcast(str);
 
     Serial.printf("%s %u: Sent broadcast message: ", role.c_str(), mesh.getNodeTime() );
@@ -136,10 +139,12 @@ void checkButtonPress() {
       buttonActive = false; // reset
       if ( millis() - buttonTimer > SHORT_PRESS_MIN_TIME ) {    // test if debounce is reached
         tapTempo.update(true); // update ArduinoTapTempo
-        Serial.printf("%s %u: Button TAP. %u. BPM: ", role.c_str(), mesh.getNodeTime() );
+        Serial.printf("%s %u: Button TAP. BPM: ", role.c_str(), mesh.getNodeTime() );
         Serial.println(tapTempo.getBPM() );
         newBPMSet = true ;
       }
+    } else {
+      tapTempo.update(false);
     }
   }
 } // end checkButtonPress()

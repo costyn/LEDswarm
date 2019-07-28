@@ -42,11 +42,11 @@ void FillLEDsFromPaletteColors(uint8_t paletteIndex ) {
   }
 
   // add extra glitter during "fast"
-  if ( taskCurrentPatternRun.getInterval() < 10 ) {
-    addGlitter(250);
-  } else {
-    addGlitter(25);
-  }
+  // if ( taskCurrentPatternRun.getInterval() < 10 ) {
+  //   addGlitter(250);
+  // } else {
+  //   addGlitter(25);
+  // }
 
 
 FastLED.setBrightness( maxBright ) ;
@@ -665,4 +665,42 @@ void cylon() {
   FastLED.show();
   fadeToBlackBy(leds, NUM_LEDS, 255);
 }
+#endif
+
+#ifdef RT_FIRE_STRIPE
+void fireStripe() {
+  static uint8_t ledPos = 0 ;
+  static uint8_t hue = 0 ;
+  int incomingByte = 0;   // for incoming serial data
+  int val ;
+
+  if (Serial.available() > 0) {
+     // read the incoming byte:
+     hue = Serial.parseInt();
+     val = Serial.parseInt();
+
+//     if (Serial.read() == '\n') {
+       // say what you got:
+       Serial.print("hue: ");
+       Serial.print(hue);
+       Serial.print("val: ");
+       Serial.println(val);
+  //   }
+   }
+
+
+  //CHSV colorStart = CHSV( beatsin8( 33, 0, 25), 255, beatsin8( 25, 10, 128));
+  //CHSV colorEnd = CHSV( beatsin8( 55, 0, 25), 255, beatsin8( 128, 128, 255));
+  CHSV colorStart = CHSV( hue, 25, val);
+  CHSV colorEnd = CHSV( hue, 255, val);
+  //CHSV colorEnd = CHSV( hue+64, 255, 255);
+
+  fill_gradient(leds, ledPos, colorStart, ledPos + 30, colorEnd, SHORTEST_HUES ) ;
+
+  FastLED.setBrightness( maxBright ) ;
+  FastLED.show();
+
+//  hue++ ;
+}
+
 #endif

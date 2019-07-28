@@ -37,8 +37,8 @@ void checkMastership() {
 void receivedCallback( uint32_t from, String &msg ) {
   //  Serial.printf("Received msg from %u: %s\n", from, msg.c_str());
   if( role == "SLAVE" ) {
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject& root  = jsonBuffer.parseObject(msg);
+    static StaticJsonDocument<256> root;
+    deserializeJson(root, msg);
 
     if( root["currentBPM"] ) {
       currentBPM = root["currentBPM"].as<uint32_t>() ;  // TODO: set BPM in tapTempo object
@@ -51,8 +51,8 @@ void receivedCallback( uint32_t from, String &msg ) {
     // }
 
   } else if( role == "MASTER") {
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject& root  = jsonBuffer.parseObject(msg);
+    static StaticJsonDocument<256> root;
+    deserializeJson(root, msg);
 
     uint32_t patternRunTime = root["patternRunTime"].as<uint32_t>() ;
     Serial.printf("%s %u (slave end time): \tBPM: %u\t Pattern: %u\tRunTime: %u\n", role.c_str(), mesh.getNodeTime(), currentBPM, currentPattern, patternRunTime );

@@ -104,6 +104,9 @@ const char *routines[] = {
   #ifdef RT_CYLON
   "cylon",
   #endif
+  #ifdef RT_FIRE_STRIPE
+  "firestripe",
+  #endif
   #ifdef RT_BLACK
   "black",
   #endif
@@ -326,6 +329,12 @@ void currentPatternRun() {
     #ifdef RT_THREE_SIN_PAL
   } else if ( strcmp(routines[currentPattern], "tsp") == 0 ) {
     threeSinPal() ;
+    taskCurrentPatternRun.setInterval( 10 * TASK_MILLISECOND ) ;
+    #endif
+
+    #ifdef RT_FIRE_STRIPE
+  } else if ( strcmp(routines[currentPattern], "firestripe") == 0 ) {
+    fireStripe() ;
     taskCurrentPatternRun.setInterval( 10 * TASK_MILLISECOND ) ;
     #endif
 
