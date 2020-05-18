@@ -1,11 +1,7 @@
-// ---- LED stuff ----
-// External Test Strip:
-#define NEO_PIXEL
-// #define LED_PIN     22   // which pin your Neopixels are connected to
-// #define NUM_LEDS    17
-// #define DEFAULT_BRIGHTNESS 100
-// #define MAX_BRIGHTNESS 150
+#define ATOMMATRIX
 
+// ---- LED stuff ----
+#define NEO_PIXEL
 #define NUM_LEDS    25
 // #define NEO_PIXEL_MULTI
 #define LED_PIN_1    27
@@ -30,7 +26,9 @@
 // #define BUTTON_GND_PIN 15  // is the button connected to another PIN?
 
 // ---- Misc ----
-#define DEFAULT_BPM 60
+#define DEFAULT_BPM 130
+#define DEFAULT_PATTERN   1
+// #define AUTOADVANCE
 
 // ---- Patterns ----
 // #define RT_P_RB_STRIPE

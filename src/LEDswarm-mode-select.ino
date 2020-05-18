@@ -199,9 +199,9 @@ void currentPatternRun() {
   } else if ( strcmp(routines[currentPattern], "fglitter") == 0 ) {
     fadeGlitter() ;
     #ifdef USING_MPU
-        taskLedModeSelect.setInterval( map( constrain( activityLevel(), 0, 2500), 0, 2500, 40, 2 ) * TASK_RES_MULTIPLIER ) ;
+        taskCurrentPatternRun.setInterval( map( constrain( activityLevel(), 0, 2500), 0, 2500, 40, 2 ) * TASK_RES_MULTIPLIER ) ;
     #else
-        taskLedModeSelect.setInterval( 20 * TASK_RES_MULTIPLIER ) ;
+        taskCurrentPatternRun.setInterval( 20 * TASK_RES_MULTIPLIER ) ;
     #endif
 #endif
 
@@ -209,9 +209,9 @@ void currentPatternRun() {
   } else if ( strcmp(routines[currentPattern], "dglitter") == 0 ) {
     discoGlitter() ;
     #ifdef USING_MPU
-        taskLedModeSelect.setInterval( map( constrain( activityLevel(), 0, 2500), 0, 2500, 40, 2 ) * TASK_RES_MULTIPLIER ) ;
+        taskCurrentPatternRun.setInterval( map( constrain( activityLevel(), 0, 2500), 0, 2500, 40, 2 ) * TASK_RES_MULTIPLIER ) ;
     #else
-        taskLedModeSelect.setInterval( 10 * TASK_RES_MULTIPLIER ) ;
+        taskCurrentPatternRun.setInterval( 10 * TASK_RES_MULTIPLIER ) ;
     #endif
 #endif
 

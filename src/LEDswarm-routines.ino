@@ -37,7 +37,7 @@ void FillLEDsFromPaletteColors(uint8_t paletteIndex ) {
   uint8_t colorIndex = startIndex ;
 
   for ( uint8_t i = 0; i < NUM_LEDS; i++) {
-    leds[i] = ColorFromPalette( palettes[paletteIndex], colorIndex, maxBright, LINEARBLEND );
+    leds[i] = ColorFromPalette( palettes[paletteIndex], colorIndex, 255, LINEARBLEND );
     colorIndex += STEPS;
   }
 
@@ -48,7 +48,8 @@ void FillLEDsFromPaletteColors(uint8_t paletteIndex ) {
   //   addGlitter(25);
   // }
 
-
+// DEBUG_PRINT("maxBright: ");
+// DEBUG_PRINTLN(maxBright);
 FastLED.setBrightness( maxBright ) ;
 FastLED.show();
 
@@ -336,12 +337,46 @@ void heartbeat() {
 
   #define NUM_STEPS (sizeof(hbTable)/sizeof(uint8_t *)) //array size
 
+#ifdef ATOMMATRIX
+  drawHeart();
+#else
   fill_solid(leds, NUM_LEDS, CRGB::Red);
+#endif
+
   // beat8 generates index 0-255 (fract8) as per getBPM(). lerp8by8 interpolates that to array index:
   uint8_t hbIndex = lerp8by8( 0, NUM_STEPS, beat8( tapTempo.getBPM() )) ;
   uint8_t brightness = lerp8by8( 0, maxBright, hbTable[hbIndex] ) ;
   FastLED.setBrightness( brightness );
   FastLED.show();
+}
+#endif
+
+#ifdef ATOMMATRIX
+static void drawHeart()
+{
+    memset(leds, 0, sizeof(leds));
+    int c = CRGB::Red;
+
+    setled(1,0,c);
+    setled(3,0,c);
+
+    setled(0,1,c);
+    setled(1,1,c+180);
+    setled(2,1,c);
+    setled(3,1,c+180);
+    setled(4,1,c);
+
+    setled(0,2,c);
+    setled(1,2,c+180);
+    setled(2,2,c+180);
+    setled(3,2,c+180);
+    setled(4,2,c);
+
+    setled(1,3,c);
+    setled(2,3,c+180);
+    setled(3,3,c);
+
+    setled(2,4,c);
 }
 #endif
 

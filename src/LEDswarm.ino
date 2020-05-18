@@ -4,20 +4,21 @@
 // * Set Pattern
 // * Set Brightness
 
-// #define DEBUG
+#define LEDSWARM_DEBUG
 
 #define TIME_SYNC_INTERVAL  60000000  // Mesh time resync period, in us. 1 minute
-#define FASTLED_ALLOW_INTERRUPTS 1    // Allow interrupts, to prevent wifi weirdness ; https://github.com/FastLED/FastLED/wiki/Interrupt-problems
-#define INTERRUPT_THRESHOLD 1   // also see https://github.com/FastLED/FastLED/issues/367
+// #define FASTLED_ALLOW_INTERRUPTS 1    // Allow interrupts, to prevent wifi weirdness ; https://github.com/FastLED/FastLED/wiki/Interrupt-problems
+// #define INTERRUPT_THRESHOLD 1   // also see https://github.com/FastLED/FastLED/issues/367
 #define USE_GET_MILLISECOND_TIMER     // Define our own millis() source for FastLED beat functions: see get_millisecond_timer()
+#define TASK_RES_MULTIPLIER  1
+
 
 #include <painlessMesh.h>
 #include <ArduinoTapTempo.h>  // pio lib [--global] install https://github.com/dxinteractive/ArduinoTapTempo.git
 #include <FastLED.h>
 #include <easing.h>
 
-#ifdef DEBUG
-#define DEBUG_PRINT(x)       Serial.printf(x,)
+#ifdef LEDSWARM_DEBUG
 #define DEBUG_PRINT(x)       Serial.print (x)
 #define DEBUG_PRINTDEC(x)    Serial.print (x, DEC)
 #define DEBUG_PRINTLN(x)     Serial.println (x)
@@ -31,7 +32,6 @@
 #define   MESH_PASSWORD     "somethingSneaky"
 #define   MESH_PORT         5555
 
-#define   DEFAULT_PATTERN   0
 
 
 #if defined(NEO_PIXEL) || defined(NEO_PIXEL_MULTI)
@@ -90,9 +90,9 @@ void setup() {
   Serial.begin(115200);
   delay(1000); // Startup delay; let things settle down
 
-  mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on
+  // mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on
   //mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | DEBUG );  // set before init() so that you can see startup messages
-  // mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | SYNC );  // set before init() so that you can see startup messages
+  mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | SYNC );  // set before init() so that you can see startup messages
   mesh.init(MESH_SSID, MESH_PASSWORD, &userScheduler, MESH_PORT);
   mesh.onReceive(&receivedCallback);
   mesh.onNewConnection(&newConnectionCallback);
@@ -105,16 +105,19 @@ void setup() {
 #ifdef APA_102
   FastLED.addLeds<CHIPSET, MY_DATA_PIN, MY_CLOCK_PIN, COLOR_ORDER, DATA_RATE_MHZ(12)>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
 #else
-  FastLED.addLeds<CHIPSET, LED_PIN_1>(leds, NUM_LEDS);
+  FastLED.addLeds<CHIPSET, LED_PIN_1, COLOR_ORDER>(leds, NUM_LEDS);
 #endif
 
   userScheduler.addTask( taskSendMessage );
   userScheduler.addTask( taskCheckButtonPress );
   userScheduler.addTask( taskCurrentPatternRun );
-  //mesh.scheduler.addTask( taskSelectNextPattern );
   taskCheckButtonPress.enable() ;
   taskCurrentPatternRun.enable() ;
+
+#ifdef AUTOADVANCE
+  userScheduler.addTask( taskSelectNextPattern );
   taskSelectNextPattern.enable() ;
+#endif
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
@@ -148,7 +151,7 @@ void sendMessage() {
 
     Serial.printf("%s %u: Sent broadcast message: ", role.c_str(), mesh.getNodeTime() );
     Serial.println(str);
-    Serial.printf("Brightness: %s\n", maxBright);
+    // Serial.printf("Brightness: %i\n", maxBright);
   } else {
     Serial.printf("%s %u: No msg to send.\tBPM: %u\tPattern: %u\n", role.c_str(), mesh.getNodeTime(), currentBPM, currentPattern );
   }
