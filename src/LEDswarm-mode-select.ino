@@ -116,7 +116,7 @@ const char *routines[] = {
 
 
 void currentPatternRun() {
-// Serial.print(".");
+  // Serial.print(".");
 
   if( currentPattern != nextPattern ) {
     firstPatternIteration = true ;
@@ -195,19 +195,27 @@ void currentPatternRun() {
     twirlers( 6, true ) ;
     #endif
 
-    #ifdef RT_FADE_GLITTER
+#ifdef RT_FADE_GLITTER
   } else if ( strcmp(routines[currentPattern], "fglitter") == 0 ) {
     fadeGlitter() ;
-    taskCurrentPatternRun.setInterval( map( constrain( activityLevel(), 0, 4000), 0, 4000, 20, 5 ) * TASK_MILLISECOND ) ;
+    #ifdef USING_MPU
+        taskLedModeSelect.setInterval( map( constrain( activityLevel(), 0, 2500), 0, 2500, 40, 2 ) * TASK_RES_MULTIPLIER ) ;
+    #else
+        taskLedModeSelect.setInterval( 20 * TASK_RES_MULTIPLIER ) ;
     #endif
+#endif
 
-    #ifdef RT_DISCO_GLITTER
+#ifdef RT_DISCO_GLITTER
   } else if ( strcmp(routines[currentPattern], "dglitter") == 0 ) {
     discoGlitter() ;
-    taskCurrentPatternRun.setInterval( map( constrain( activityLevel(), 0, 2500), 0, 2500, 40, 2 ) * TASK_MILLISECOND ) ;
+    #ifdef USING_MPU
+        taskLedModeSelect.setInterval( map( constrain( activityLevel(), 0, 2500), 0, 2500, 40, 2 ) * TASK_RES_MULTIPLIER ) ;
+    #else
+        taskLedModeSelect.setInterval( 10 * TASK_RES_MULTIPLIER ) ;
     #endif
+#endif
 
-    #ifdef RT_GLED
+#ifdef RT_GLED
     // Gravity LED
   } else if ( strcmp(routines[currentPattern], "gled") == 0 ) {
     gLed() ;
@@ -343,7 +351,6 @@ void currentPatternRun() {
     cylon() ;
     taskCurrentPatternRun.setInterval( 1 * TASK_MILLISECOND ) ;
     #endif
-
   }
 }
 

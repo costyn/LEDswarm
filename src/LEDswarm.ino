@@ -4,8 +4,6 @@
 // * Set Pattern
 // * Set Brightness
 
-//#define _TASK_MICRO_RES     // Turn on microsecond timing - painlessMesh does not support it (yet)
-
 // #define DEBUG
 
 #define TIME_SYNC_INTERVAL  60000000  // Mesh time resync period, in us. 1 minute
@@ -13,38 +11,41 @@
 #define INTERRUPT_THRESHOLD 1   // also see https://github.com/FastLED/FastLED/issues/367
 #define USE_GET_MILLISECOND_TIMER     // Define our own millis() source for FastLED beat functions: see get_millisecond_timer()
 
-#include "LEDswarm.h"
-#include "painlessMesh.h"
-#include "ArduinoTapTempo.h"  // pio lib [--global] install https://github.com/dxinteractive/ArduinoTapTempo.git
-#include "FastLED.h"
+#include <painlessMesh.h>
+#include <ArduinoTapTempo.h>  // pio lib [--global] install https://github.com/dxinteractive/ArduinoTapTempo.git
+#include <FastLED.h>
+#include <easing.h>
 
-#ifdef    _TASK_MICRO_RES
-#define   TASK_MILLISECOND   1000
+#ifdef DEBUG
+#define DEBUG_PRINT(x)       Serial.printf(x,)
+#define DEBUG_PRINT(x)       Serial.print (x)
+#define DEBUG_PRINTDEC(x)    Serial.print (x, DEC)
+#define DEBUG_PRINTLN(x)     Serial.println (x)
 #else
-#define   TASK_MILLISECOND   1
+#define DEBUG_PRINT(x)
+#define DEBUG_PRINTDEC(x)
+#define DEBUG_PRINTLN(x)
 #endif
 
-
-#define   BUTTON_PIN        0
-
-#define   MESH_PREFIX       "LEDforge"
+#define   MESH_SSID       "LEDforge"
 #define   MESH_PASSWORD     "somethingSneaky"
 #define   MESH_PORT         5555
 
-#define   DEFAULT_PATTERN   1
-#define   DEFAULT_BRIGHTNESS  100  // 0-255, higher number is brighter.
-#define   NUM_LEDS          40
+#define   DEFAULT_PATTERN   0
 
-#define COLOR_ORDER
 
-#ifdef   APA_102
-#define MY_DATA_PIN  13
-#define MY_CLOCK_PIN 14
-#define COLOR_ORDER BGR
-#else
-#define  MY_DATA_PIN          15
+#if defined(NEO_PIXEL) || defined(NEO_PIXEL_MULTI)
+#define CHIPSET     WS2812B
 #define COLOR_ORDER GRB
 #endif
+
+
+#if defined(APA_102) || defined(APA_102_SLOW)
+#include <SPI.h>
+#define CHIPSET     APA102
+#define COLOR_ORDER BGR
+#endif
+
 
 // LED variables
 CRGB      leds[NUM_LEDS];
@@ -52,12 +53,24 @@ uint8_t   maxBright = DEFAULT_BRIGHTNESS ;
 uint8_t  currentPattern = DEFAULT_PATTERN ; // Which mode do we start with
 uint8_t  nextPattern    = currentPattern ;
 bool     firstPatternIteration = true ;    // if this pattern is being run for the first time
+uint8_t   currentBrightness = maxBright ;
+
+// Prototypes
+void sendMessage();
+void receivedCallback(uint32_t from, String & msg);
+void newConnectionCallback(uint32_t nodeId);
+void changedConnectionCallback();
+void nodeTimeAdjustedCallback(int32_t offset);
+void delayReceivedCallback(uint32_t from, int32_t delay);
 
 // Mesh variables
 painlessMesh  mesh;
 SimpleList<uint32_t> nodes;
 String role = "MASTER" ; // default start out as master unless told otherwise
 uint32_t activeSlave ;
+
+//Scheduler
+Scheduler userScheduler; // to control your personal task
 
 // BPM variables
 ArduinoTapTempo tapTempo;
@@ -77,10 +90,10 @@ void setup() {
   Serial.begin(115200);
   delay(1000); // Startup delay; let things settle down
 
-  //mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on
+  mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on
   //mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | DEBUG );  // set before init() so that you can see startup messages
-  mesh.setDebugMsgTypes( ERROR | STARTUP );  // set before init() so that you can see startup messages
-  mesh.init( MESH_PREFIX, MESH_PASSWORD, MESH_PORT );
+  // mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | SYNC );  // set before init() so that you can see startup messages
+  mesh.init(MESH_SSID, MESH_PASSWORD, &userScheduler, MESH_PORT);
   mesh.onReceive(&receivedCallback);
   mesh.onNewConnection(&newConnectionCallback);
   mesh.onChangedConnections(&changedConnectionCallback);
@@ -90,19 +103,20 @@ void setup() {
   // nodes.push_back( mesh.getNodeId() ) ; // add our own ID to the list of nodes
 
 #ifdef APA_102
-  FastLED.addLeds<APA102, MY_DATA_PIN, MY_CLOCK_PIN, COLOR_ORDER, DATA_RATE_MHZ(12)>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<CHIPSET, MY_DATA_PIN, MY_CLOCK_PIN, COLOR_ORDER, DATA_RATE_MHZ(12)>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
 #else
-  FastLED.addLeds<NEOPIXEL, MY_DATA_PIN>(leds, NUM_LEDS);
+  FastLED.addLeds<CHIPSET, LED_PIN_1>(leds, NUM_LEDS);
 #endif
 
-  mesh.scheduler.addTask( taskSendMessage );
-  mesh.scheduler.addTask( taskCheckButtonPress );
-  mesh.scheduler.addTask( taskCurrentPatternRun );
+  userScheduler.addTask( taskSendMessage );
+  userScheduler.addTask( taskCheckButtonPress );
+  userScheduler.addTask( taskCurrentPatternRun );
   //mesh.scheduler.addTask( taskSelectNextPattern );
   taskCheckButtonPress.enable() ;
   taskCurrentPatternRun.enable() ;
   taskSelectNextPattern.enable() ;
 
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   Serial.print("Starting up... my Node ID is: ");
   Serial.println(mesh.getNodeId()) ;
@@ -111,7 +125,7 @@ void setup() {
 
 
 void loop() {
-  yield() ;
+  // yield() ;
   mesh.update();
 } // end loop()
 
@@ -134,6 +148,7 @@ void sendMessage() {
 
     Serial.printf("%s %u: Sent broadcast message: ", role.c_str(), mesh.getNodeTime() );
     Serial.println(str);
+    Serial.printf("Brightness: %s\n", maxBright);
   } else {
     Serial.printf("%s %u: No msg to send.\tBPM: %u\tPattern: %u\n", role.c_str(), mesh.getNodeTime(), currentBPM, currentPattern );
   }
