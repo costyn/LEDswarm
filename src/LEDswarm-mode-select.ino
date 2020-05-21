@@ -118,6 +118,9 @@ const char *routines[] = {
 void currentPatternRun() {
   // Serial.print(".");
 
+  // default
+  // taskCurrentPatternRun.setInterval( CURRENTPATTERN_SELECT_DEFAULT_INTERVAL ) ;
+
   if( currentPattern != nextPattern ) {
     firstPatternIteration = true ;
   }
@@ -353,7 +356,6 @@ void currentPatternRun() {
     #endif
   }
 }
-
 
 void selectNextPattern() {
   nextPattern = currentPattern + 1 ;

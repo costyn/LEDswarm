@@ -14,9 +14,10 @@
 
 
 #include <painlessMesh.h>
-#include <ArduinoTapTempo.h>  // pio lib [--global] install https://github.com/dxinteractive/ArduinoTapTempo.git
+#include <ArduinoTapTempo.h>  // pio lib [--global] install ArduinoTapTempo
 #include <FastLED.h>
 #include <easing.h>
+#include <JC_Button.h>          // https://github.com/JChristensen/JC_Button
 
 #ifdef LEDSWARM_DEBUG
 #define DEBUG_PRINT(x)       Serial.print (x)
@@ -77,8 +78,12 @@ ArduinoTapTempo tapTempo;
 bool newBPMSet = true ;     // flag for when new BPM is set by button
 uint32_t currentBPM = 120 ; // default BPM of ArduinoTapTempo
 
+Button bpmButton(BPM_BUTTON_PIN);
+// Button bpmButton(BPM_BUTTON_PIN, 50, true, true);
+Button nextPatternButton(BUTTON_PIN);
+
 // Task variables
-#define TASK_CHECK_BUTTON_PRESS_INTERVAL    10   // in milliseconds
+#define TASK_CHECK_BUTTON_PRESS_INTERVAL    100   // in milliseconds
 #define CURRENTPATTERN_SELECT_DEFAULT_INTERVAL     1   // default scheduling time for currentPatternSELECT, in milliseconds
 Task taskCheckButtonPress( TASK_CHECK_BUTTON_PRESS_INTERVAL, TASK_FOREVER, &checkButtonPress);
 Task taskCurrentPatternRun( CURRENTPATTERN_SELECT_DEFAULT_INTERVAL, TASK_FOREVER, &currentPatternRun);
@@ -119,7 +124,9 @@ void setup() {
   taskSelectNextPattern.enable() ;
 #endif
 
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  // pinMode(BPM_BUTTON_PIN, INPUT_PULLUP);
+  bpmButton.begin();
+  nextPatternButton.begin();
 
   Serial.print("Starting up... my Node ID is: ");
   Serial.println(mesh.getNodeId()) ;
@@ -140,7 +147,7 @@ void sendMessage() {
 
     currentPattern = nextPattern ;       // update our own running pattern
     currentBPM     = tapTempo.getBPM() ; // update our BPM with (possibly new) BPM
-    newBPMSet      = false ;            // reset the flag
+    newBPMSet      = false ;             // reset the flag
 
     msg["currentBPM"]     = currentBPM;
     msg["currentPattern"] = currentPattern ;
@@ -157,31 +164,51 @@ void sendMessage() {
   }
 } // end sendMessage()
 
-#define SHORT_PRESS_MIN_TIME 50   // minimum time for a short press - debounce
+void checkButtonPress()
+{
+  bpmButton.read();
+  nextPatternButton.read();
 
-void checkButtonPress() {
-  static unsigned long buttonTimer = 0;
-  static bool buttonActive = false;
-
-  if( digitalRead(BUTTON_PIN) == LOW ) {
-    if (buttonActive == false) {
-      buttonActive = true;
-      buttonTimer = millis();
-    }
+  if( bpmButton.wasPressed() ) {
+    tapTempo.update(true); // update ArduinoTapTempo
+    Serial.printf("%s %u: Button TAP. BPM: ", role.c_str(), mesh.getNodeTime() );
+    Serial.println(tapTempo.getBPM() );
+    newBPMSet = true ;
   } else {
-    if (buttonActive == true) {
-      buttonActive = false; // reset
-      if ( millis() - buttonTimer > SHORT_PRESS_MIN_TIME ) {    // test if debounce is reached
-        tapTempo.update(true); // update ArduinoTapTempo
-        Serial.printf("%s %u: Button TAP. BPM: ", role.c_str(), mesh.getNodeTime() );
-        Serial.println(tapTempo.getBPM() );
-        newBPMSet = true ;
-      }
-    } else {
-      tapTempo.update(false);
-    }
+    tapTempo.update(false);
   }
-} // end checkButtonPress()
+
+  if( nextPatternButton.wasPressed() ) {
+    selectNextPattern();
+  }
+}
+
+
+
+// #define SHORT_PRESS_MIN_TIME 50   // minimum time for a short press - debounce
+// void checkButtonPress() {
+//   static unsigned long buttonTimer = 0;
+//   static bool buttonActive = false;
+//
+//   if( digitalRead(BUTTON_PIN) == LOW ) {
+//     if (buttonActive == false) {
+//       buttonActive = true;
+//       buttonTimer = millis();
+//     }
+//   } else {
+//     if (buttonActive == true) {
+//       buttonActive = false; // reset
+//       if ( millis() - buttonTimer > SHORT_PRESS_MIN_TIME ) {    // test if debounce is reached
+//         tapTempo.update(true); // update ArduinoTapTempo
+//         Serial.printf("%s %u: Button TAP. BPM: ", role.c_str(), mesh.getNodeTime() );
+//         Serial.println(tapTempo.getBPM() );
+//         newBPMSet = true ;
+//       }
+//     } else {
+//       tapTempo.update(false);
+//     }
+//   }
+// } // end checkButtonPress()
 
 // @Override This function is called by FastLED inside lib8tion.h. Requests it to use mesg.getNodeTime instead of internal millis() timer.
 // Makes every pattern on each node synced!! So awesome!

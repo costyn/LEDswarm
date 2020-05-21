@@ -54,7 +54,7 @@ FastLED.setBrightness( maxBright ) ;
 FastLED.show();
 
 //  taskCurrentPatternRun.setInterval( beatsin16( tapTempo.getBPM(), 1500, 50000) ) ; // microseconds
-taskCurrentPatternRun.setInterval( beatsin16( tapTempo.getBPM(), 5, 50 ) ) ;
+// taskCurrentPatternRun.setInterval( beatsin16( tapTempo.getBPM(), 5, 50 ) ) ;
 }
 
 

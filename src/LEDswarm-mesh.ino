@@ -44,6 +44,7 @@ void receivedCallback( uint32_t from, String &msg ) {
       currentBPM = root["currentBPM"].as<uint32_t>() ;  // TODO: set BPM in tapTempo object
       currentPattern   = root["currentPattern"].as<uint8_t>() ;
       Serial.printf("%s %u: \tBPM: %u\t Pattern: %u\n", role.c_str(), mesh.getNodeTime(), currentBPM, currentPattern );
+      tapTempo.setBPM(currentBPM);
     }
 
     // if( root["runOnce"] ) {
