@@ -9,6 +9,8 @@ void FillLEDsFromPaletteColors(uint8_t paletteIndex ) {
     firstPatternIteration = false ;   // reset flag
   }
 
+  // DEBUG_PRINTLN(startIndex);
+
   const CRGBPalette16 palettes[] = { RainbowStripeColors_p,
     #ifdef RT_P_RB
     RainbowColors_p,
@@ -265,8 +267,6 @@ void twirlers(uint8_t numTwirlers, bool opposing ) {
 #endif
 
 
-
-#ifdef RT_HEARTBEAT
 void heartbeat() {
   const uint8_t hbTable[] = {
     25,
@@ -337,48 +337,57 @@ void heartbeat() {
 
   #define NUM_STEPS (sizeof(hbTable)/sizeof(uint8_t *)) //array size
 
-#ifdef ATOMMATRIX
-  drawHeart();
-#else
-  fill_solid(leds, NUM_LEDS, CRGB::Red);
-#endif
-
   // beat8 generates index 0-255 (fract8) as per getBPM(). lerp8by8 interpolates that to array index:
   uint8_t hbIndex = lerp8by8( 0, NUM_STEPS, beat8( tapTempo.getBPM() )) ;
-  uint8_t brightness = lerp8by8( 0, maxBright, hbTable[hbIndex] ) ;
-  FastLED.setBrightness( brightness );
-  FastLED.show();
-}
-#endif
+
+  uint8_t lerp_maxBright = lerp8by8( 0, ATOM_MAX_BRIGHTNESS, MAX_BRIGHTNESS );
 
 #ifdef ATOMMATRIX
-static void drawHeart()
+  uint8_t brightness = lerp8by8( 0, ATOM_MAX_BRIGHTNESS, hbTable[hbIndex] ) ;
+  drawHeart(brightness);
+#else
+  uint8_t brightness = lerp8by8( 0, maxBright, hbTable[hbIndex] ) ;
+  fill_solid(leds, NUM_LEDS, CHSV(0, 255, brightness));
+#endif
+
+  FastLED.show();
+}
+
+static void drawHeart(int brightness)
 {
-    memset(leds, 0, sizeof(leds));
-    int c = CRGB::Red;
+    memset(matrix_leds, 0, sizeof(matrix_leds));
+    CHSV c = CHSV(0, 255, brightness);
+    CHSV alt_color = CHSV(180, 255, brightness);
+    // DEBUG_PRINTLN(brightness);
 
     setled(1,0,c);
     setled(3,0,c);
 
     setled(0,1,c);
-    setled(1,1,c+180);
+    setled(1,1,alt_color);
     setled(2,1,c);
-    setled(3,1,c+180);
+    setled(3,1,alt_color);
     setled(4,1,c);
 
     setled(0,2,c);
-    setled(1,2,c+180);
-    setled(2,2,c+180);
-    setled(3,2,c+180);
+    setled(1,2,alt_color);
+    setled(2,2,alt_color);
+    setled(3,2,alt_color);
     setled(4,2,c);
 
     setled(1,3,c);
-    setled(2,3,c+180);
+    setled(2,3,alt_color);
     setled(3,3,c);
 
     setled(2,4,c);
+    FastLED.show();
+
 }
-#endif
+
+static void setled(int x, int y, CHSV c)
+{
+    matrix_leds[y * 5 + x] = c;
+}
 
 
 #if defined(RT_FASTLOOP) || defined(RT_FASTLOOP2)

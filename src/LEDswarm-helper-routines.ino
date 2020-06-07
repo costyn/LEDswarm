@@ -332,8 +332,3 @@ uint8_t mappedEase8InOutQuad( uint8_t p ) {
   int     eased_255   = ease8InOutQuad( i_255 );
   return  map(eased_255, 0, 255, 0, NUM_LEDS);  // convert back to LED position
 }
-
-static void setled(int x, int y, CRGB c)
-{
-    leds[y * 5 + x] = c;
-}

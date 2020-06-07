@@ -2,14 +2,16 @@
 
 // ---- LED stuff ----
 #define NEO_PIXEL
-#define NUM_LEDS    25
-// #define NEO_PIXEL_MULTI
-#define LED_PIN_1    27
-#define LED_PIN_2    22
-#define NUM_LEDS_PER_STRIP 25
-#define DEFAULT_BRIGHTNESS 20
-#define MAX_BRIGHTNESS 20
+#define NUM_LEDS    60
+#define LED_PIN_1    26
+#define DEFAULT_BRIGHTNESS 120
+#define MAX_BRIGHTNESS 120
 
+#define ATOM_LEDPIN  27
+#define ATOM_MAX_BRIGHTNESS  100
+#define ATOM_NUM_LED 25
+
+// Offically should be 150/255 = x/150.
 
 // Onboard:
 // #define NEO_PIXEL
@@ -28,7 +30,7 @@
 // ---- Misc ----
 #define DEFAULT_BPM 130
 #define DEFAULT_PATTERN   1
-// #define AUTOADVANCE
+#define AUTOADVANCE
 
 // ---- Patterns ----
 #define RT_P_RB_STRIPE
@@ -46,7 +48,7 @@
 // #define RT_TWIRL6_O
 #define RT_FADE_GLITTER
 #define RT_DISCO_GLITTER
-#define RT_HEARTBEAT
+// #define RT_HEARTBEAT
 #define RT_FASTLOOP
 #define RT_FASTLOOP2
 // #define RT_PENDULUM

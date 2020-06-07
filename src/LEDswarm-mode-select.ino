@@ -121,8 +121,13 @@ void currentPatternRun() {
   // default
   // taskCurrentPatternRun.setInterval( CURRENTPATTERN_SELECT_DEFAULT_INTERVAL ) ;
 
+  #ifdef ATOMMATRIX
+    heartbeat();
+  #endif
+
   if( currentPattern != nextPattern ) {
     firstPatternIteration = true ;
+    currentPattern = nextPattern;
   }
 
   if ( strcmp(routines[currentPattern], "p_rb_stripe") == 0  ) {

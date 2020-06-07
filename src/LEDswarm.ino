@@ -50,6 +50,7 @@
 
 // LED variables
 CRGB      leds[NUM_LEDS];
+CRGB      matrix_leds[ATOM_NUM_LED];
 uint8_t   maxBright = DEFAULT_BRIGHTNESS ;
 uint8_t  currentPattern = DEFAULT_PATTERN ; // Which mode do we start with
 uint8_t  nextPattern    = currentPattern ;
@@ -111,6 +112,7 @@ void setup() {
   FastLED.addLeds<CHIPSET, MY_DATA_PIN, MY_CLOCK_PIN, COLOR_ORDER, DATA_RATE_MHZ(12)>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
 #else
   FastLED.addLeds<CHIPSET, LED_PIN_1, COLOR_ORDER>(leds, NUM_LEDS);
+  FastLED.addLeds<CHIPSET, ATOM_LEDPIN, COLOR_ORDER>(matrix_leds, ATOM_NUM_LED);
 #endif
 
   userScheduler.addTask( taskSendMessage );
@@ -164,6 +166,7 @@ void sendMessage() {
   }
 } // end sendMessage()
 
+
 void checkButtonPress()
 {
   bpmButton.read();
@@ -181,34 +184,13 @@ void checkButtonPress()
   if( nextPatternButton.wasPressed() ) {
     selectNextPattern();
   }
+
+  // if( nextPatternButton.pressedFor(500)) {
+  //   cycleBrightness();
+  // }
 }
 
 
-
-// #define SHORT_PRESS_MIN_TIME 50   // minimum time for a short press - debounce
-// void checkButtonPress() {
-//   static unsigned long buttonTimer = 0;
-//   static bool buttonActive = false;
-//
-//   if( digitalRead(BUTTON_PIN) == LOW ) {
-//     if (buttonActive == false) {
-//       buttonActive = true;
-//       buttonTimer = millis();
-//     }
-//   } else {
-//     if (buttonActive == true) {
-//       buttonActive = false; // reset
-//       if ( millis() - buttonTimer > SHORT_PRESS_MIN_TIME ) {    // test if debounce is reached
-//         tapTempo.update(true); // update ArduinoTapTempo
-//         Serial.printf("%s %u: Button TAP. BPM: ", role.c_str(), mesh.getNodeTime() );
-//         Serial.println(tapTempo.getBPM() );
-//         newBPMSet = true ;
-//       }
-//     } else {
-//       tapTempo.update(false);
-//     }
-//   }
-// } // end checkButtonPress()
 
 // @Override This function is called by FastLED inside lib8tion.h. Requests it to use mesg.getNodeTime instead of internal millis() timer.
 // Makes every pattern on each node synced!! So awesome!
