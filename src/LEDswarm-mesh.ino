@@ -8,7 +8,6 @@ void checkMastership() {
   // Print out a list of nodes and check which has the lowest Node ID:
   Serial.printf("Node list: ");
 
-
   while( node != nodes.end() ) {
     if( *node < masterNodeId ) {
       masterNodeId = *node ;
@@ -35,15 +34,17 @@ void checkMastership() {
 
 
 void receivedCallback( uint32_t from, String &msg ) {
-  //  Serial.printf("Received msg from %u: %s\n", from, msg.c_str());
+  // Serial.printf("Received msg from %u: %s\n", from, msg.c_str());
   if( role == "SLAVE" ) {
     static StaticJsonDocument<256> root;
     deserializeJson(root, msg);
 
     if( root["currentBPM"] ) {
-      currentBPM = root["currentBPM"].as<uint32_t>() ;  // TODO: set BPM in tapTempo object
-      currentPattern   = root["currentPattern"].as<uint8_t>() ;
+      currentBPM      = root["currentBPM"].as<uint32_t>() ;  // TODO: set BPM in tapTempo object
+      nextPattern     = root["currentPattern"].as<uint8_t>() ;
       Serial.printf("%s %u: \tBPM: %u\t Pattern: %u\n", role.c_str(), mesh.getNodeTime(), currentBPM, currentPattern );
+      // Serial.printf("%s %u: \t taskSendMessage: %d\t taskCheckButtonPress: %d\t taskSelectNextPattern: %d\n", role.c_str(),
+      //   mesh.getNodeTime(), taskSendMessage.isEnabled(), taskCheckButtonPress.isEnabled(), taskSelectNextPattern.isEnabled() );
       tapTempo.setBPM(currentBPM);
     }
 

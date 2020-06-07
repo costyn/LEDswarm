@@ -265,7 +265,7 @@ void cycleBrightness() {
 #endif
 
 // Custom modulo which always returns a positive number
-int mod(int x, int m) {
+int mod(uint8_t x, uint8_t m) {
   return (x % m + m) % m;
 }
 

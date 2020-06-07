@@ -4,8 +4,8 @@
 #define NEO_PIXEL
 #define NUM_LEDS    60
 #define LED_PIN_1    26
-#define DEFAULT_BRIGHTNESS 120
-#define MAX_BRIGHTNESS 120
+#define DEFAULT_BRIGHTNESS 100
+#define MAX_BRIGHTNESS 100
 
 #define ATOM_LEDPIN  27
 #define ATOM_MAX_BRIGHTNESS  100
@@ -39,13 +39,13 @@
 #define RT_P_LAVA
 #define RT_P_PARTY
 #define RT_P_FOREST
-// #define RT_TWIRL1
-// #define RT_TWIRL2
-// #define RT_TWIRL4
-// #define RT_TWIRL6
-// #define RT_TWIRL2_O
-// #define RT_TWIRL4_O
-// #define RT_TWIRL6_O
+#define RT_TWIRL1
+#define RT_TWIRL2
+#define RT_TWIRL4
+#define RT_TWIRL6
+#define RT_TWIRL2_O
+#define RT_TWIRL4_O
+#define RT_TWIRL6_O
 #define RT_FADE_GLITTER
 #define RT_DISCO_GLITTER
 // #define RT_HEARTBEAT

@@ -238,7 +238,8 @@ void twirlers(uint8_t numTwirlers, bool opposing ) {
 
   for (uint8_t i = 0 ; i < numTwirlers ; i++) {
     if ( (i % 2) == 0 ) {
-      pos = (clockwiseFirst + round( NUM_LEDS / numTwirlers ) * i) % NUM_LEDS ;
+      // pos = (clockwiseFirst + round( NUM_LEDS / numTwirlers ) * i) % NUM_LEDS ;
+      pos = mod((clockwiseFirst + round( NUM_LEDS / numTwirlers ) * i), NUM_LEDS) ;
       if ( leds[pos] ) { // FALSE if currently BLACK - don't blend with black
         leds[pos] = blend( leds[pos], clockwiseColor, 128 ) ;
       } else {
@@ -248,10 +249,13 @@ void twirlers(uint8_t numTwirlers, bool opposing ) {
     } else {
 
       if ( opposing ) {
-        uint8_t antiClockwiseFirst = NUM_LEDS - (lerp8by8( 0, NUM_LEDS, beat8( tapTempo.getBPM() / speedCorrection ))) % NUM_LEDS ;
-        pos = (antiClockwiseFirst + round( NUM_LEDS / numTwirlers ) * i) % NUM_LEDS ;
+        // uint8_t antiClockwiseFirst = NUM_LEDS - (lerp8by8( 0, NUM_LEDS, beat8( tapTempo.getBPM() / speedCorrection ))) % NUM_LEDS ;
+        uint8_t antiClockwiseFirst = NUM_LEDS - mod(lerp8by8( 0, NUM_LEDS, beat8( tapTempo.getBPM() / speedCorrection )), NUM_LEDS) ;
+        // pos = (antiClockwiseFirst + round( NUM_LEDS / numTwirlers ) * i) % NUM_LEDS ;
+        pos = mod((antiClockwiseFirst + round( NUM_LEDS / numTwirlers ) * i),NUM_LEDS) ;
       } else {
-        pos = (clockwiseFirst + round( NUM_LEDS / numTwirlers ) * i) % NUM_LEDS ;
+        // pos = (clockwiseFirst + round( NUM_LEDS / numTwirlers ) * i) % NUM_LEDS ;
+        pos = mod((clockwiseFirst + round( NUM_LEDS / numTwirlers ) * i),NUM_LEDS) ;
       }
       if ( leds[pos] ) { // FALSE if currently BLACK - don't blend with black
         leds[pos] = blend( leds[pos], antiClockwiseColor, 128 ) ;

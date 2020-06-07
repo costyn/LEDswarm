@@ -130,6 +130,8 @@ void setup() {
   bpmButton.begin();
   nextPatternButton.begin();
 
+  tapTempo.setBPM(DEFAULT_BPM);
+
   Serial.print("Starting up... my Node ID is: ");
   Serial.println(mesh.getNodeId()) ;
   checkMastership() ;

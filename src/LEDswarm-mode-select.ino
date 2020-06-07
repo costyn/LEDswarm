@@ -126,8 +126,10 @@ void currentPatternRun() {
   #endif
 
   if( currentPattern != nextPattern ) {
+    // Serial.printf("%s %u: \t currentPattern: %i\t nextPattern: %i\n", role.c_str(), mesh.getNodeTime(), currentPattern, nextPattern );
     firstPatternIteration = true ;
     currentPattern = nextPattern;
+    // Serial.printf("%s %u: \t currentPattern: %i\t nextPattern: %i\n", role.c_str(), mesh.getNodeTime(), currentPattern, nextPattern );
   }
 
   if ( strcmp(routines[currentPattern], "p_rb_stripe") == 0  ) {
