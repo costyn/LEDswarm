@@ -4,8 +4,8 @@
 #define NEO_PIXEL
 #define NUM_LEDS    60
 #define LED_PIN_1    26
-#define DEFAULT_BRIGHTNESS 100
-#define MAX_BRIGHTNESS 100
+#define DEFAULT_BRIGHTNESS 80
+#define MAX_BRIGHTNESS 80
 
 #define ATOM_LEDPIN  27
 #define ATOM_MAX_BRIGHTNESS  100
@@ -31,6 +31,7 @@
 #define DEFAULT_BPM 130
 #define DEFAULT_PATTERN   1
 #define AUTOADVANCE
+#define AUTO_ADVANCE_DELAY 30
 
 // ---- Patterns ----
 #define RT_P_RB_STRIPE

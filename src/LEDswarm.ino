@@ -88,8 +88,8 @@ Button nextPatternButton(BUTTON_PIN);
 #define CURRENTPATTERN_SELECT_DEFAULT_INTERVAL     1   // default scheduling time for currentPatternSELECT, in milliseconds
 Task taskCheckButtonPress( TASK_CHECK_BUTTON_PRESS_INTERVAL, TASK_FOREVER, &checkButtonPress);
 Task taskCurrentPatternRun( CURRENTPATTERN_SELECT_DEFAULT_INTERVAL, TASK_FOREVER, &currentPatternRun);
-Task taskSendMessage( TASK_SECOND * 5, TASK_FOREVER, &sendMessage ); // check every second if we have a new BPM / pattern to send
-Task taskSelectNextPattern( TASK_SECOND * 15, TASK_FOREVER, &selectNextPattern);  // switch to next pattern every 15 seconds
+Task taskSendMessage( TASK_SECOND * 5, TASK_FOREVER, &sendMessage ); // check every 5 second if we have a new BPM / pattern to send
+Task taskSelectNextPattern( TASK_SECOND * AUTO_ADVANCE_DELAY, TASK_FOREVER, &selectNextPattern);  // switch to next pattern every AUTO_ADVANCE_DELAY seconds
 //Task taskRunPatternOnNode( TASK_IMMEDIATE, TASK_ONCE, &runPatternOnNode );
 
 void setup() {

@@ -342,7 +342,14 @@ void heartbeat() {
   #define NUM_STEPS (sizeof(hbTable)/sizeof(uint8_t *)) //array size
 
   // beat8 generates index 0-255 (fract8) as per getBPM(). lerp8by8 interpolates that to array index:
-  uint8_t hbIndex = lerp8by8( 0, NUM_STEPS, beat8( tapTempo.getBPM() )) ;
+  static float hbTempo ;
+
+  if(alone()) {
+    hbTempo = tapTempo.getBPM()/2 ;
+  } else {
+    hbTempo = tapTempo.getBPM() ;
+  }
+  uint8_t hbIndex = lerp8by8( 0, NUM_STEPS, beat8( hbTempo )) ;
 
   uint8_t lerp_maxBright = lerp8by8( 0, ATOM_MAX_BRIGHTNESS, MAX_BRIGHTNESS );
 
@@ -361,7 +368,10 @@ static void drawHeart(int brightness)
 {
     memset(matrix_leds, 0, sizeof(matrix_leds));
     CHSV c = CHSV(0, 255, brightness);
-    CHSV alt_color = CHSV(180, 255, brightness);
+    CHSV alt_color = CHSV(0, 255, brightness);
+    if (alone()) {
+      alt_color = CHSV(180, 255, brightness);
+    }
     // DEBUG_PRINTLN(brightness);
 
     setled(1,0,c);

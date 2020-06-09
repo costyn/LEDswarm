@@ -32,6 +32,9 @@ void checkMastership() {
   }
 } // end checkMastership()
 
+boolean alone(){
+  return nodes.size() <= 1 ;
+}
 
 void receivedCallback( uint32_t from, String &msg ) {
   // Serial.printf("Received msg from %u: %s\n", from, msg.c_str());
@@ -40,7 +43,7 @@ void receivedCallback( uint32_t from, String &msg ) {
     deserializeJson(root, msg);
 
     if( root["currentBPM"] ) {
-      currentBPM      = root["currentBPM"].as<uint32_t>() ;  // TODO: set BPM in tapTempo object
+      currentBPM      = root["currentBPM"].as<uint32_t>() ;
       nextPattern     = root["currentPattern"].as<uint8_t>() ;
       Serial.printf("%s %u: \tBPM: %u\t Pattern: %u\n", role.c_str(), mesh.getNodeTime(), currentBPM, currentPattern );
       // Serial.printf("%s %u: \t taskSendMessage: %d\t taskCheckButtonPress: %d\t taskSelectNextPattern: %d\n", role.c_str(),
