@@ -3,6 +3,9 @@ ESP8266/ESP32 based mesh to drive and synchronize a swarm of mobile LEDs
 
 __VIDEO: https://www.youtube.com/watch?v=Uttsf_RPKiI__
 
+In the video the nodes are using the awesome M5Stack Atom Matrix ESP32 dev kit:
+https://m5stack.com/collections/m5-atom/products/atom-matrix-esp32-development-kit
+
 Using these awesome libraries:
 * painlessMesh: https://gitlab.com/painlessMesh
 * FastLED: https://github.com/FastLED/FastLED
@@ -15,6 +18,7 @@ Using these awesome libraries:
 * Mesh master election
 * Automatic synchronisation of pattern, pattern timing and BPM (for bpm based patterns).
 * Each node will work standalone when out of range of the rest (it will become it's own master)
+* On the Atom Matrix 5x5 rgb display the heart will pulse slowly when *alone* (out of range) and will pulse quickly when *together in a mesh!*
 
 ## Usage
 * Make a new src/headers/<project>.h file with your preferences (see other files for examples)
