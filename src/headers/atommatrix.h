@@ -2,38 +2,31 @@
 
 // ---- LED stuff ----
 #define NEO_PIXEL
-#define NUM_LEDS    60
+#define NUM_LEDS    90
 #define LED_PIN_1    26
+
+// 80 is more than enough for night time
 #define DEFAULT_BRIGHTNESS 80
 #define MAX_BRIGHTNESS 80
 
 #define ATOM_LEDPIN  27
+// Atom Matrix display/final brightness should not be more than 20!
+// MAX_BRIGHTNESS/255 = x/MAX_BRIGHTNESS
 #define ATOM_MAX_BRIGHTNESS  100
 #define ATOM_NUM_LED 25
 
-// Offically should be 150/255 = x/150.
-
-// Onboard:
-// #define NEO_PIXEL
-// #define LED_PIN     27   // which pin your Neopixels are connected to
-// #define NUM_LEDS 25
-// #define DEFAULT_BRIGHTNESS 20
-// #define MAX_BRIGHTNESS 20
-
-
 // ---- Buttons ----
 #define BUTTON_PIN 39
-// #define BUTTON_LED_PIN 3
 #define BPM_BUTTON_PIN 25
-// #define BUTTON_GND_PIN 15  // is the button connected to another PIN?
 
 // ---- Misc ----
 #define DEFAULT_BPM 130
 #define DEFAULT_PATTERN   1
+// Should the pattern auto advance? And how long to display each pattern?
 #define AUTOADVANCE
 #define AUTO_ADVANCE_DELAY 30
 
-// ---- Patterns ----
+// ---- Which Patterns To Include? ----
 #define RT_P_RB_STRIPE
 #define RT_P_OCEAN
 #define RT_P_HEAT
@@ -49,7 +42,6 @@
 #define RT_TWIRL6_O
 #define RT_FADE_GLITTER
 #define RT_DISCO_GLITTER
-// #define RT_HEARTBEAT
 #define RT_FASTLOOP
 #define RT_FASTLOOP2
 // #define RT_PENDULUM

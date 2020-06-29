@@ -1,24 +1,12 @@
 // ---- LED stuff ----
-// External Test Strip:
+// For the huge umbrella Jellyfish project
 #define NEO_PIXEL
-// #define LED_PIN     22   // which pin your Neopixels are connected to
-// #define NUM_LEDS    17
-// #define DEFAULT_BRIGHTNESS 100
-// #define MAX_BRIGHTNESS 150
 
 #define NEO_PIXEL
 #define LED_PIN     21   // which pin your Neopixels are connected to
 #define NUM_LEDS 205
 #define DEFAULT_BRIGHTNESS 100
 #define MAX_BRIGHTNESS 150
-
-
-// Onboard:
-// #define NEO_PIXEL
-// #define LED_PIN     27   // which pin your Neopixels are connected to
-// #define NUM_LEDS 25
-// #define DEFAULT_BRIGHTNESS 20
-// #define MAX_BRIGHTNESS 20
 
 
 // ---- Buttons ----
