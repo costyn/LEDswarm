@@ -1,6 +1,8 @@
 # LEDswarm
 ESP8266/ESP32 based mesh to drive and synchronize a swarm of mobile LEDs
 
+__VIDEO: https://www.youtube.com/watch?v=Uttsf_RPKiI__
+
 Using these awesome libraries:
 * painlessMesh: https://gitlab.com/painlessMesh
 * FastLED: https://github.com/FastLED/FastLED
