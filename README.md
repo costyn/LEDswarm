@@ -28,4 +28,3 @@ Using these awesome libraries:
 ## TODO (Wish) list
 * Multi-node sequential patterns: nodes handoff patterns to each other in sequence
 * Control via an app or other interface
-* UI/UX: button to control BPM/brightness - or long/short press controls
