@@ -34,3 +34,4 @@ Exact synchronisation of patterns and timing is done by FastLED using the clock 
 ## TODO (Wish) list
 * Multi-node sequential patterns: nodes handoff patterns to each other in sequence
 * Control via an app or other interface
+* UI/UX: button to control BPM/brightness - or long/short press controls
