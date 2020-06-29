@@ -2,16 +2,22 @@
 
 // ---- LED stuff ----
 #define NEO_PIXEL
-#define NUM_LEDS    60
+#define NUM_NODE_LEDS    25
+#define ATOM_LEDPIN 27
+#define ATOM_NUM_LED 25
 #define LED_PIN_1    26
 
-// 80 is more than enough for night time
-#define DEFAULT_BRIGHTNESS 50
-#define MAX_BRIGHTNESS 50
+#define   MAX_NODES         5
+#define   MAX_MESH_LEDS      MAX_NODES*NUM_NODE_LEDS
 
-#define ATOM_LEDPIN  27
+// 80 is more than enough for night time
+#define DEFAULT_BRIGHTNESS 20
+#define MAX_BRIGHTNESS 20
+
+// #define ATOM_LEDPIN  27
 // Atom Matrix display/final brightness should not be more than 20!
 // MAX_BRIGHTNESS/255 = x/MAX_BRIGHTNESS
+#define ATOM_MAX_BRIGHTNESS  100
 #define ATOM_MAX_BRIGHTNESS  170
 #define ATOM_NUM_LED 25
 
@@ -23,7 +29,7 @@
 #define DEFAULT_BPM 130
 #define DEFAULT_PATTERN   1
 // Should the pattern auto advance? And how long to display each pattern?
-#define AUTOADVANCE
+// #define AUTOADVANCE
 #define AUTO_ADVANCE_DELAY 30
 
 // ---- Which Patterns To Include? ----
@@ -46,11 +52,11 @@
 #define RT_FASTLOOP2
 // #define RT_PENDULUM
 #define RT_BOUNCEBLEND
-#define RT_JUGGLE_PAL
+// #define RT_JUGGLE_PAL
 #define RT_NOISE_LAVA
 #define RT_NOISE_PARTY
 #define RT_PULSE_5_1
 #define RT_PULSE_5_2
 #define RT_PULSE_5_3
-#define RT_THREE_SIN_PAL
+// #define RT_THREE_SIN_PAL
 #define RT_COLOR_GLOW
