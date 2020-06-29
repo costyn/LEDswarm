@@ -9,6 +9,7 @@ Using these awesome libraries:
 ## Features
 * Mesh master election
 * Automatic synchronisation of pattern, pattern timing and BPM (for bpm based patterns).
+* Each node will work standalone when out of range of the rest (it will become a local master)
 
 ## Usage
 * Make a new src/headers/<project>.h file with your preferences.
