@@ -16,9 +16,15 @@ Using these awesome libraries:
 * No central node needed
 * Automatic joining of wifi mesh
 * Mesh master election
-* Automatic synchronisation of pattern, pattern timing and BPM (for bpm based patterns).
+* Automatic synchronisation of pattern, pattern timing and BPM (for bpm based patterns). 
 * Each node will work standalone when out of range of the rest (it will become it's own master)
 * On the Atom Matrix 5x5 rgb display the heart will pulse slowly when *alone* (out of range) and will pulse quickly when *together in a mesh!*
+
+Exact synchronisation of patterns and timing is done by FastLED using the clock from the mesh instead of an internal timer:
+
+    uint32_t get_millisecond_timer() {
+       return mesh.getNodeTime()/1000 ;
+    }
 
 ## Usage
 * Make a new src/headers/<project>.h file with your preferences (see other files for examples)
