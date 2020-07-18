@@ -2,17 +2,17 @@
 
 // ---- LED stuff ----
 #define NEO_PIXEL
-#define NUM_LEDS    90
+#define NUM_LEDS    60
 #define LED_PIN_1    26
 
 // 80 is more than enough for night time
-#define DEFAULT_BRIGHTNESS 80
-#define MAX_BRIGHTNESS 80
+#define DEFAULT_BRIGHTNESS 50
+#define MAX_BRIGHTNESS 50
 
 #define ATOM_LEDPIN  27
 // Atom Matrix display/final brightness should not be more than 20!
 // MAX_BRIGHTNESS/255 = x/MAX_BRIGHTNESS
-#define ATOM_MAX_BRIGHTNESS  100
+#define ATOM_MAX_BRIGHTNESS  170
 #define ATOM_NUM_LED 25
 
 // ---- Buttons ----
