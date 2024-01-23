@@ -22,6 +22,7 @@
 #include <JC_Button.h>
 #include <I2SClocklessLedDriver.h>
 
+#define LEDSWARM_DEBUG
 
 #ifdef LEDSWARM_DEBUG
 #define DEBUG_PRINT(x)       Serial.print (x)
@@ -37,12 +38,13 @@
 #define   MESH_PASSWORD     "somethingSneaky"
 #define   MESH_PORT         5555
 
-#define LEDSWARM_DEBUG
-
 #if defined(NEO_PIXEL) || defined(NEO_PIXEL_MULTI)
 #define CHIPSET     WS2812B
 #define COLOR_ORDER GRB
 #endif
+
+#define LEADER "LEADER"
+#define FOLLOWER "FOLLOWER"
 
 
 #if defined(APA_102) || defined(APA_102_SLOW)
@@ -76,7 +78,7 @@ CRGB      matrix_leds[ATOM_NUM_LED];
 #endif
 
 #ifdef ATOMMATRIX
-FX fx(leds, matrix_leds, LEDS_PER_NODE);
+FX fx(_localLeds, matrix_leds, LEDS_PER_NODE);
 #else
 FX fx(_meshleds, LEDS_PER_NODE); // at boot, mesh is just 1 node
 #endif
@@ -84,7 +86,7 @@ FX fx(_meshleds, LEDS_PER_NODE); // at boot, mesh is just 1 node
 painlessMesh  mesh;
 // https://painlessmesh.gitlab.io/painlessMesh/configuration_8hpp.html#a21459eda80c40da63432b0b89793f46d
 SimpleList<uint32_t> nodes; // std::list<T>;
-String role = "MASTER" ; // default start out as master unless told otherwise
+String role = LEADER ; // default start out as leader unless told otherwise
 uint32_t activeSlave ;
 
 //Scheduler

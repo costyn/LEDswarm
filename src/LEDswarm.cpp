@@ -11,9 +11,9 @@ void setup() {
   Serial.begin(115200);
   delay(1000); // Startup delay; let things settle down
 
-  // mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on; WARNING, buggy!!
+  mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on; WARNING, buggy!!
   // mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | DEBUG );  // set before init() so that you can see startup messages
-  mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | SYNC );  // set before init() so that you can see startup messages
+  // mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | SYNC );  // set before init() so that you can see startup messages
   // mesh.setDebugMsgTypes( ERROR | STARTUP );  // set before init() so that you can see startup messages
   mesh.init(MESH_PREFIX, MESH_PASSWORD, &userScheduler, MESH_PORT);
   mesh.onReceive(&receivedCallback);
@@ -25,7 +25,7 @@ void setup() {
 #ifdef APA_102
   // FastLED.addLeds<CHIPSET, MY_DATA_PIN, MY_CLOCK_PIN, COLOR_ORDER, DATA_RATE_MHZ(12)>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
 #else
-  // FastLED.addLeds<CHIPSET, LED_PIN_1, COLOR_ORDER>(leds, NUM_NODE_LEDS);
+  // FastLED.addLeds<CHIPSET, LED_PIN_1, COLOR_ORDER>(_localLeds, LEDS_PER_NODE);
 #endif
 
 #ifdef ATOMMATRIX 
@@ -34,10 +34,10 @@ void setup() {
 
   int pins[1]={27};
   _driver.initled((uint8_t*)_localLeds,pins,1,LEDS_PER_NODE,ORDER_GRB);
-  _driver.setBrightness(100);
+  _driver.setBrightness(DEFAULT_BRIGHTNESS);
 
   userScheduler.addTask( taskSendMessage );
-  userScheduler.addTask( taskCheckButtonPress );
+  // userScheduler.addTask( taskCheckButtonPress );
   userScheduler.addTask( taskCurrentPatternRun );
   taskCheckButtonPress.enable() ;
 
@@ -129,18 +129,18 @@ void checkMastership() {
   fx.setMeshNumLeds(_meshNumLeds);
 
   if( mesh.getNodeId() == masterNodeId ) {
-    role = "MASTER";
+    role = LEADER;
     taskSendMessage.enableIfNot() ;
     taskCheckButtonPress.enableIfNot() ;
     taskSelectNextPattern.enableIfNot() ;
-    Serial.printf("%s %u: checkMastership(); I am MASTER\n", role.c_str(), mesh.getNodeTime() );
   } else {
-    role = "SLAVE" ;
-    taskSendMessage.disable() ;         // Only MASTER sends broadcast
+    role = FOLLOWER;
+    taskSendMessage.disable() ;         // Only LEADER sends broadcast
     taskCheckButtonPress.disable() ;    // Slaves can't set BPM
-    taskSelectNextPattern.disable() ;   // Slaves wait for instructions from the MASTER
-    Serial.printf("%s %u: checkMastership(); I am SLAVE\n", role.c_str(), mesh.getNodeTime() );
+    taskSelectNextPattern.disable() ;   // Slaves wait for instructions from the LEADER
   }
+  Serial.printf("%s %u: checkMastership(); I am %s\n", role.c_str(), mesh.getNodeTime(), role.c_str() );
+
 
   Serial.printf("\n%s %u: %d nodes. Mesh Leds: %d. NodePos: %u root: %d\n", role.c_str(), mesh.getNodeTime(), _numNodes, _meshNumLeds, _nodePos, mesh.isRoot());
 
@@ -152,7 +152,7 @@ boolean alone(){
 
 void receivedCallback( uint32_t from, String &msg ) {
   // Serial.printf("Received msg from %u: %s\n", from, msg.c_str());
-  if( role == "SLAVE" ) {
+  if( role == FOLLOWER) {
     static StaticJsonDocument<256> root;
     deserializeJson(root, msg);
 
@@ -170,7 +170,7 @@ void receivedCallback( uint32_t from, String &msg ) {
     //   executeOneCycle = true ;
     // }
 
-  } else if( role == "MASTER") {
+  } else if( role == LEADER) {
     static StaticJsonDocument<256> root;
     deserializeJson(root, msg);
 
@@ -517,7 +517,7 @@ void currentPatternRun() {
 
     // COPY 
     memcpy( &_localLeds, &_meshleds[_nodePos*LEDS_PER_NODE], sizeof(CRGB)*LEDS_PER_NODE ); 
-    if( role == "MASTER") {
+    if( role == LEADER) {
       _localLeds[_nodePos] = CRGB::Purple;
     } else {
       _localLeds[_nodePos] = CRGB::Green;
@@ -532,7 +532,35 @@ void selectNextPattern() {
     nextPattern = 0;
   }
 
-  if( role == "MASTER" ) {
+  if( role == LEADER ) {
      taskSendMessage.forceNextIteration(); // Schedule next iteration immediately, for sending a new pattern msg to slaves
   }
+}
+
+
+void showNum(CRGB * matrixLeds, int numLeds, int n) {
+
+    static const bool _ = false;
+    static const bool X = true;
+    static const bool digits[] = {
+    X,X,X,  _,X,_,  X,X,X,  X,X,X,  X,_,X,  X,X,X,  _,X,X,  X,X,X,  X,X,X,  X,X,X,
+    X,_,X,  _,X,_,  _,_,X,  _,_,X,  X,_,X,  X,_,_,  X,_,_,  _,_,X,  X,_,X,  X,_,X,
+    X,_,X,  _,X,_,  X,X,X,  X,X,X,  X,X,X,  X,X,X,  X,X,X,  _,X,_,  X,X,X,  X,X,X,
+    X,_,X,  _,X,_,  X,_,_,  _,_,X,  _,_,X,  _,_,X,  X,_,X,  _,X,_,  X,_,X,  _,_,X,
+    X,X,X,  _,X,_,  X,X,X,  X,X,X,  _,_,X,  X,X,X,  X,X,X,  _,X,_,  X,X,X,  X,X,_
+    };
+
+    int first  = n / 10;
+    int second = n % 10;
+    CRGB color = CHSV(beatsin8(5),255,255);
+
+    for (int i = 0; i < numLeds; i++) matrixLeds[i] = CRGB::Black;
+
+    for (int y = 0; y < 5; y++) {
+        if (first) matrixLeds[y*5] = color;  // digit 1 or nothing
+
+        for (int x = 0; x < 3; x++) {
+            if (digits[y*30 + second*3 + x]) matrixLeds[y*5 + first + 1 + x] = color;
+        }
+    }
 }
