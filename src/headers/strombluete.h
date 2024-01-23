@@ -10,8 +10,8 @@
 #define MAX_MESH_LEDS    MAX_NODES*LEDS_PER_NODE
 
 // There are only 8 leds
-#define DEFAULT_BRIGHTNESS 255
-#define MAX_BRIGHTNESS 255
+#define DEFAULT_BRIGHTNESS 254
+#define MAX_BRIGHTNESS 254
 
 // #define ATOM_LEDPIN  27
 // Atom Matrix display/final brightness should not be more than 20!

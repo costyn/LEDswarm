@@ -115,7 +115,7 @@ uint32_t get_millisecond_timer();
 
 void checkMastership() ;
 boolean alone();
-void receivedCallback( uint32_t from, String &msg ) ;
+void receivedCallback(uint32_t from, String & msg);
 void newConnectionCallback(uint32_t nodeId) ;
 void changedConnectionCallback() ;
 void nodeTimeAdjustedCallback(int32_t offset) ;

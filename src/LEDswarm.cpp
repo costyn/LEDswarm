@@ -9,18 +9,23 @@
 
 void setup() {
   Serial.begin(115200);
-  delay(1000); // Startup delay; let things settle down
+  delay(2000); // Startup delay; let things settle down
+  Serial.println("after Serial begin");
 
-  mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on; WARNING, buggy!!
+
+  // mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on; WARNING, buggy!!
   // mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | DEBUG );  // set before init() so that you can see startup messages
   // mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | SYNC );  // set before init() so that you can see startup messages
   // mesh.setDebugMsgTypes( ERROR | STARTUP );  // set before init() so that you can see startup messages
   mesh.init(MESH_PREFIX, MESH_PASSWORD, &userScheduler, MESH_PORT);
+  Serial.println("after mesh init");
   mesh.onReceive(&receivedCallback);
   mesh.onNewConnection(&newConnectionCallback);
   mesh.onChangedConnections(&changedConnectionCallback);
   mesh.onNodeTimeAdjusted(&nodeTimeAdjustedCallback);
   mesh.onNodeDelayReceived(&delayReceivedCallback);
+
+  Serial.println("after mesh");
 
 #ifdef APA_102
   // FastLED.addLeds<CHIPSET, MY_DATA_PIN, MY_CLOCK_PIN, COLOR_ORDER, DATA_RATE_MHZ(12)>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
@@ -34,12 +39,19 @@ void setup() {
 
   int pins[1]={27};
   _driver.initled((uint8_t*)_localLeds,pins,1,LEDS_PER_NODE,ORDER_GRB);
+    Serial.println("after initled");
+
   _driver.setBrightness(DEFAULT_BRIGHTNESS);
+
+  Serial.println("after setBrightness");
 
   userScheduler.addTask( taskSendMessage );
   // userScheduler.addTask( taskCheckButtonPress );
   userScheduler.addTask( taskCurrentPatternRun );
   taskCheckButtonPress.enable() ;
+
+    Serial.println("after taskCheckButtonPress enable");
+
 
 #ifdef AUTOADVANCE
   userScheduler.addTask( taskSelectNextPattern );
@@ -246,7 +258,7 @@ uint32_t get_millisecond_timer() {
 
 
 void currentPatternRun() {
-  // Serial.print(".");
+  Serial.print(".");
 
   // default
   // taskCurrentPatternRun.setInterval( CURRENTPATTERN_SELECT_DEFAULT_INTERVAL ) ;
