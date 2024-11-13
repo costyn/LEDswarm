@@ -4,23 +4,17 @@
 #define NEO_PIXEL
 #define LEDS_PER_NODE   8
 #define NUM_LEDS_PER_STRIP LEDS_PER_NODE
-#define LED_PIN_1       16
+#define LED_PIN_1       18
 
-#define MAX_NODES        10
+#define MAX_NODES        5
 #define MAX_MESH_LEDS    MAX_NODES*LEDS_PER_NODE
 
 // There are only 8 leds
 #define DEFAULT_BRIGHTNESS 254
 #define MAX_BRIGHTNESS 254
 
-// #define ATOM_LEDPIN  27
-// Atom Matrix display/final brightness should not be more than 20!
-// MAX_BRIGHTNESS/255 = x/MAX_BRIGHTNESS
-// #define ATOM_MAX_BRIGHTNESS  170
-// #define ATOM_NUM_LED 25
-
 // ---- Buttons ----
-#define BUTTON_PIN 39
+#define BUTTON_PIN 23
 #define BPM_BUTTON_PIN 25
 
 // ---- Misc ----
@@ -31,12 +25,11 @@
 #define AUTO_ADVANCE_DELAY 30
 
 // ---- Which Patterns To Include? ----
-#define RT_P_RB_STRIPE
 // #define RT_P_OCEAN
-// #define RT_P_HEAT
-// #define RT_P_LAVA
-// #define RT_P_PARTY
-// #define RT_P_FOREST
+#define RT_P_HEAT
+#define RT_P_LAVA
+#define RT_P_PARTY
+#define RT_P_FOREST
 // #define RT_TWIRL1
 // #define RT_TWIRL2
 // #define RT_TWIRL4

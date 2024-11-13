@@ -9,12 +9,12 @@
 
 void setup() {
   Serial.begin(115200);
-  delay(2000); // Startup delay; let things settle down
+  delay(1000); // Startup delay; let things settle down
   Serial.println("after Serial begin");
 
 
   // mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on; WARNING, buggy!!
-  // mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | DEBUG );  // set before init() so that you can see startup messages
+  mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | DEBUG );  // set before init() so that you can see startup messages
   // mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | SYNC );  // set before init() so that you can see startup messages
   // mesh.setDebugMsgTypes( ERROR | STARTUP );  // set before init() so that you can see startup messages
   mesh.init(MESH_PREFIX, MESH_PASSWORD, &userScheduler, MESH_PORT);
@@ -37,7 +37,7 @@ void setup() {
   // FastLED.addLeds<CHIPSET, ATOM_LEDPIN, COLOR_ORDER>(matrix_leds, ATOM_NUM_LED);
 #endif
 
-  int pins[1]={27};
+  int pins[1]={LED_PIN_1};
   _driver.initled((uint8_t*)_localLeds,pins,1,LEDS_PER_NODE,ORDER_GRB);
     Serial.println("after initled");
 
@@ -62,7 +62,8 @@ void setup() {
   bpmButton.begin();
   nextPatternButton.begin();
 
-  tapTempo.setBPM(DEFAULT_BPM);
+  // DO NOT UNCOMMENT. CRASHES ESP32!
+  // tapTempo.setBPM(DEFAULT_BPM);
 
   Serial.print("Starting up... my Node ID is: ");
   Serial.println(mesh.getNodeId()) ;
@@ -258,7 +259,7 @@ uint32_t get_millisecond_timer() {
 
 
 void currentPatternRun() {
-  Serial.print(".");
+  // Serial.print(".");
 
   // default
   // taskCurrentPatternRun.setInterval( CURRENTPATTERN_SELECT_DEFAULT_INTERVAL ) ;
@@ -267,7 +268,7 @@ void currentPatternRun() {
     fx.heartbeat();
   #endif
 
-  fx.spin();  
+  // fx.spin();  
   taskCurrentPatternRun.setInterval( 10 * TASK_MILLISECOND ) ;
 
   // if( currentPattern != nextPattern ) {
@@ -278,8 +279,8 @@ void currentPatternRun() {
   // }
 
   if ( strcmp(routines[currentPattern], "p_rb_stripe") == 0  ) {
-    // fx.setCurrentPalette(RainbowStripeColors_p);
-    // fx.FillLEDsFromPaletteColors() ;
+    fx.setCurrentPalette(RainbowStripeColors_p);
+    fx.FillLEDsFromPaletteColors() ;
 
     #ifdef RT_P_RB
   } else if ( strcmp(routines[currentPattern], "p_rb") == 0 ) {
@@ -529,11 +530,11 @@ void currentPatternRun() {
 
     // COPY 
     memcpy( &_localLeds, &_meshleds[_nodePos*LEDS_PER_NODE], sizeof(CRGB)*LEDS_PER_NODE ); 
-    if( role == LEADER) {
-      _localLeds[_nodePos] = CRGB::Purple;
-    } else {
-      _localLeds[_nodePos] = CRGB::Green;
-    }
+    // if( role == LEADER) {
+    //   _localLeds[_nodePos] = CRGB::Purple;
+    // } else {
+    //   _localLeds[_nodePos] = CRGB::Green;
+    // }
     _driver.showPixels();
 }
 
