@@ -10,17 +10,21 @@
 void setup() {
   Serial.begin(115200);
   delay(1000); // Startup delay; let things settle down
+  Serial.println("after Serial begin");
 
   // mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on; WARNING, buggy!!
   mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | DEBUG );  // set before init() so that you can see startup messages
   // mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | SYNC );  // set before init() so that you can see startup messages
   // mesh.setDebugMsgTypes( ERROR | STARTUP );  // set before init() so that you can see startup messages
   mesh.init(MESH_PREFIX, MESH_PASSWORD, &userScheduler, MESH_PORT);
+  Serial.println("after mesh init");
   mesh.onReceive(&receivedCallback);
   mesh.onNewConnection(&newConnectionCallback);
   mesh.onChangedConnections(&changedConnectionCallback);
   mesh.onNodeTimeAdjusted(&nodeTimeAdjustedCallback);
   // mesh.onNodeDelayReceived(&delayReceivedCallback);
+
+  Serial.println("after mesh");
 
 #ifdef APA_102
   // FastLED.addLeds<CHIPSET, MY_DATA_PIN, MY_CLOCK_PIN, COLOR_ORDER, DATA_RATE_MHZ(12)>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
@@ -32,14 +36,21 @@ void setup() {
   FastLED.addLeds<CHIPSET, ATOM_LEDPIN, COLOR_ORDER>(matrix_leds, ATOM_NUM_LED);
 #endif
 
-  // int pins[1]={LED_PIN_1};
-  // _driver.initled((uint8_t*)_localLeds,pins,1,LEDS_PER_NODE,ORDER_GRB);
-  // _driver.setBrightness(DEFAULT_BRIGHTNESS);
+  int pins[1]={LED_PIN_1};
+  _driver.initled((uint8_t*)_localLeds,pins,1,LEDS_PER_NODE,ORDER_GRB);
+    Serial.println("after initled");
+
+  _driver.setBrightness(DEFAULT_BRIGHTNESS);
+
+  Serial.println("after setBrightness");
 
   userScheduler.addTask( taskSendMessage );
   // userScheduler.addTask( taskCheckButtonPress );
   userScheduler.addTask( taskCurrentPatternRun );
   taskCheckButtonPress.enable() ;
+
+    Serial.println("after taskCheckButtonPress enable");
+
 
 #ifdef AUTOADVANCE
   userScheduler.addTask( taskSelectNextPattern );
@@ -50,7 +61,8 @@ void setup() {
   bpmButton.begin();
   nextPatternButton.begin();
 
-  tapTempo.setBPM(DEFAULT_BPM);
+  // DO NOT UNCOMMENT. CRASHES ESP32!
+  // tapTempo.setBPM(DEFAULT_BPM);
 
   Serial.print("Starting up... my Node ID is: ");
   Serial.println(mesh.getNodeId()) ;
@@ -255,7 +267,7 @@ void currentPatternRun() {
     fx.heartbeat();
   #endif
 
-  fx.spin();  
+  // fx.spin();  
   taskCurrentPatternRun.setInterval( 10 * TASK_MILLISECOND ) ;
 
   // if( currentPattern != nextPattern ) {
@@ -266,8 +278,8 @@ void currentPatternRun() {
   // }
 
   if ( strcmp(routines[currentPattern], "p_rb_stripe") == 0  ) {
-    // fx.setCurrentPalette(RainbowStripeColors_p);
-    // fx.FillLEDsFromPaletteColors() ;
+    fx.setCurrentPalette(RainbowStripeColors_p);
+    fx.FillLEDsFromPaletteColors() ;
 
     #ifdef RT_P_RB
   } else if ( strcmp(routines[currentPattern], "p_rb") == 0 ) {
