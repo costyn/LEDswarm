@@ -36,20 +36,15 @@ void setup() {
   FastLED.addLeds<CHIPSET, ATOM_LEDPIN, COLOR_ORDER>(matrix_leds, ATOM_NUM_LED);
 #endif
 
-  int pins[1]={LED_PIN_1};
-  _driver.initled((uint8_t*)_localLeds,pins,1,LEDS_PER_NODE,ORDER_GRB);
-    Serial.println("after initled");
-
-  _driver.setBrightness(DEFAULT_BRIGHTNESS);
+  Serial.println("after initled");
 
   Serial.println("after setBrightness");
 
   userScheduler.addTask( taskSendMessage );
-  // userScheduler.addTask( taskCheckButtonPress );
+  userScheduler.addTask( taskCheckButtonPress );
   userScheduler.addTask( taskCurrentPatternRun );
   taskCheckButtonPress.enable() ;
-
-    Serial.println("after taskCheckButtonPress enable");
+  Serial.println("after taskCheckButtonPress enable");
 
 
 #ifdef AUTOADVANCE
@@ -66,7 +61,7 @@ void setup() {
 
   Serial.print("Starting up... my Node ID is: ");
   Serial.println(mesh.getNodeId()) ;
-  checkMastership() ;
+  checkLeadership() ;
 
   taskCurrentPatternRun.enable() ;
 } // end setup()
@@ -111,8 +106,8 @@ void sendMessage() {
 
 
 
-void checkMastership() {
-  uint32_t masterNodeId = UINT32_MAX ;
+void checkLeadership() {
+  uint32_t leaderNodeId = UINT32_MAX ;
   nodes = mesh.getNodeList(true);
   _numNodes = mesh.getNodeList().size();
 
@@ -129,8 +124,8 @@ void checkMastership() {
       if( i == mesh.getNodeId() ) {
         _nodePos = k;
       }
-      if( i < masterNodeId ) {
-        masterNodeId = i;
+      if( i < leaderNodeId ) {
+        leaderNodeId = i;
       }
       Serial.printf("%u ", i);
       k++;
@@ -140,7 +135,7 @@ void checkMastership() {
   _meshNumLeds = _numNodes * LEDS_PER_NODE;
   fx.setMeshNumLeds(_meshNumLeds);
 
-  if( mesh.getNodeId() == masterNodeId ) {
+  if( mesh.getNodeId() == leaderNodeId ) {
     role = LEADER;
     taskSendMessage.enableIfNot() ;
     taskCheckButtonPress.enableIfNot() ;
@@ -148,15 +143,15 @@ void checkMastership() {
   } else {
     role = FOLLOWER;
     taskSendMessage.disable() ;         // Only LEADER sends broadcast
-    taskCheckButtonPress.disable() ;    // Slaves can't set BPM
-    taskSelectNextPattern.disable() ;   // Slaves wait for instructions from the LEADER
+    taskCheckButtonPress.disable() ;    // Followers can't set BPM
+    taskSelectNextPattern.disable() ;   // Followers wait for instructions from the LEADER
   }
-  Serial.printf("%s %u: checkMastership(); I am %s\n", role.c_str(), mesh.getNodeTime(), role.c_str() );
+  Serial.printf("%s %u: checkLeadership(); I am %s\n", role.c_str(), mesh.getNodeTime(), role.c_str() );
 
 
   Serial.printf("\n%s %u: %d nodes. Mesh Leds: %d. NodePos: %u root: %d\n", role.c_str(), mesh.getNodeTime(), _numNodes, _meshNumLeds, _nodePos, mesh.isRoot());
 
-} // end checkMastership()
+} // end checkLeadership()
 
 boolean alone(){
   return mesh.getNodeList().size() <= 1 ;
@@ -173,8 +168,8 @@ void receivedCallback( uint32_t from, String &msg ) {
       nextPattern     = root["currentPattern"].as<uint8_t>() ;
       Serial.printf("%s (%u) %u: \tBPM: %u\t Pattern: %u\n", role.c_str(), _nodePos, mesh.getNodeTime(), currentBPM, currentPattern );
       Serial.printf("  (%d nodes). Mesh led count: %d\n", _numNodes, _meshNumLeds);
-      // Serial.printf("%s %u: \t taskSendMessage: %d\t taskCheckButtonPress: %d\t taskSelectNextPattern: %d\n", role.c_str(),
-      //   mesh.getNodeTime(), taskSendMessage.isEnabled(), taskCheckButtonPress.isEnabled(), taskSelectNextPattern.isEnabled() );
+      Serial.printf("%s %u: \t taskSendMessage: %d\t taskCheckButtonPress: %d\t taskSelectNextPattern: %d\n", role.c_str(),
+      mesh.getNodeTime(), taskSendMessage.isEnabled(), taskCheckButtonPress.isEnabled(), taskSelectNextPattern.isEnabled() );
       tapTempo.setBPM(currentBPM);
     }
 
@@ -187,8 +182,8 @@ void receivedCallback( uint32_t from, String &msg ) {
     deserializeJson(root, msg);
 
     uint32_t patternRunTime = root["patternRunTime"].as<uint32_t>() ;
-    Serial.printf("%s %u (slave end time): \tBPM: %u\t Pattern: %u\tRunTime: %u\n", role.c_str(), mesh.getNodeTime(), currentBPM, currentPattern, patternRunTime );
-    //      taskRunPatternOnNode.forceNextIteration(); // Send message to next SLAVE
+    Serial.printf("%s %u (follower end time): \tBPM: %u\t Pattern: %u\tRunTime: %u\n", role.c_str(), mesh.getNodeTime(), currentBPM, currentPattern, patternRunTime );
+    //      taskRunPatternOnNode.forceNextIteration(); // Send message to next Follower
   }
   // Serial.printf("Copying %d leds from position %d\n", LEDS_PER_NODE, _nodePos*LEDS_PER_NODE );
   Serial.println(); // whitespace for easier reading
@@ -198,12 +193,12 @@ void receivedCallback( uint32_t from, String &msg ) {
 
 void newConnectionCallback(uint32_t nodeId) {
   Serial.printf("%s %u: New Connection from nodeId = %u\n", role.c_str(), mesh.getNodeTime(), nodeId);
-  checkMastership() ;
+  checkLeadership() ;
 }
 
 void changedConnectionCallback() {
   Serial.printf("%s %u: Changed connections %s\n", role.c_str(), mesh.getNodeTime(), mesh.subConnectionJson().c_str());
-  checkMastership() ;
+  checkLeadership() ;
 }
 
 void nodeTimeAdjustedCallback(int32_t offset) {
@@ -222,17 +217,17 @@ void delayReceivedCallback(uint32_t from, int32_t delay) {
 
 void checkButtonPress()
 {
-  bpmButton.read();
+  // bpmButton.read();
   nextPatternButton.read();
 
-  if( bpmButton.wasPressed() ) {
-    tapTempo.update(true); // update ArduinoTapTempo
-    Serial.printf("%s %u: Button TAP. BPM: ", role.c_str(), mesh.getNodeTime() );
-    Serial.println(tapTempo.getBPM() );
-    newBPMSet = true ;
-  } else {
-    tapTempo.update(false);
-  }
+  // if( bpmButton.wasPressed() ) {
+  //   tapTempo.update(true); // update ArduinoTapTempo
+  //   Serial.printf("%s %u: Button TAP. BPM: ", role.c_str(), mesh.getNodeTime() );
+  //   Serial.println(tapTempo.getBPM() );
+  //   newBPMSet = true ;
+  // } else {
+  //   tapTempo.update(false);
+  // }
 
   if( nextPatternButton.wasPressed() ) {
     selectNextPattern();
@@ -534,7 +529,6 @@ void currentPatternRun() {
     } else {
       _localLeds[_nodePos] = CRGB::Green;
     }
-    // _driver.showPixels();
     FastLED.show();
 }
 
@@ -546,7 +540,7 @@ void selectNextPattern() {
   }
 
   if( role == LEADER ) {
-     taskSendMessage.forceNextIteration(); // Schedule next iteration immediately, for sending a new pattern msg to slaves
+     taskSendMessage.forceNextIteration(); // Schedule next iteration immediately, for sending a new pattern msg to Follower
   }
 }
 

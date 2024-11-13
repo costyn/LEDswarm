@@ -16,12 +16,12 @@
 
 // Atom Matrix display/final brightness should not be more than 20!
 // MAX_BRIGHTNESS/255 = x/MAX_BRIGHTNESS
-#define ATOM_MAX_BRIGHTNESS  100
+#define ATOM_MAX_BRIGHTNESS  255
 #define ATOM_NUM_LED 25
 
 // ---- Buttons ----
 #define BUTTON_PIN 39
-#define BPM_BUTTON_PIN 25
+#define BPM_BUTTON_PIN 32
 
 // ---- Misc ----
 #define DEFAULT_BPM 130

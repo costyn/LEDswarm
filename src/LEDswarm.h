@@ -20,7 +20,6 @@
 #include <painlessMesh.h>
 #include <ArduinoTapTempo.h>
 #include <JC_Button.h>
-// #include <I2SClocklessLedDriver.h>
 
 #define LEDSWARM_DEBUG
 
@@ -58,9 +57,6 @@
 //                    GLOBAL VARIABLES
 // ************************************************************************
 
-// #define FULL_DMA_BUFFER //this will enable the full dma buffer
-// I2SClocklessLedDriver _driver;
-
 uint8_t  _numNodes = 1; // default
 uint8_t  _nodePos = 0; // default
 uint16_t _meshNumLeds = LEDS_PER_NODE; // at boot we are alone
@@ -87,7 +83,7 @@ painlessMesh  mesh;
 // https://painlessmesh.gitlab.io/painlessMesh/configuration_8hpp.html#a21459eda80c40da63432b0b89793f46d
 SimpleList<uint32_t> nodes; // std::list<T>;
 String role = LEADER ; // default start out as leader unless told otherwise
-uint32_t activeSlave ;
+uint32_t activeFollower ;
 
 //Scheduler
 Scheduler userScheduler; // to control your personal task
@@ -113,7 +109,7 @@ void selectNextPattern();
 
 uint32_t get_millisecond_timer();
 
-void checkMastership() ;
+void checkLeadership() ;
 boolean alone();
 void receivedCallback(uint32_t from, String & msg);
 void newConnectionCallback(uint32_t nodeId) ;
@@ -127,8 +123,8 @@ void delayReceivedCallback(uint32_t from, int32_t delay) ;
 // ************************************************************************
 
 // Task variables
-#define TASK_CHECK_BUTTON_PRESS_INTERVAL    100   // in milliseconds
-#define CURRENTPATTERN_SELECT_DEFAULT_INTERVAL     1   // default scheduling time for currentPatternSELECT, in milliseconds
+#define TASK_CHECK_BUTTON_PRESS_INTERVAL    10   // in milliseconds
+#define CURRENTPATTERN_SELECT_DEFAULT_INTERVAL     5   // default scheduling time for currentPatternSELECT, in milliseconds
 Task taskCheckButtonPress( TASK_CHECK_BUTTON_PRESS_INTERVAL, TASK_FOREVER, &checkButtonPress);
 Task taskCurrentPatternRun( CURRENTPATTERN_SELECT_DEFAULT_INTERVAL, TASK_FOREVER, &currentPatternRun);
 Task taskSendMessage( TASK_SECOND * 5, TASK_FOREVER, &sendMessage ); // check every 5 second if we have a new BPM / pattern to send
