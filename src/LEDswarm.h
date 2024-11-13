@@ -20,7 +20,7 @@
 #include <painlessMesh.h>
 #include <ArduinoTapTempo.h>
 #include <JC_Button.h>
-#include <I2SClocklessLedDriver.h>
+// #include <I2SClocklessLedDriver.h>
 
 #define LEDSWARM_DEBUG
 
@@ -58,8 +58,8 @@
 //                    GLOBAL VARIABLES
 // ************************************************************************
 
-#define FULL_DMA_BUFFER //this will enable the full dma buffer
-I2SClocklessLedDriver _driver;
+// #define FULL_DMA_BUFFER //this will enable the full dma buffer
+// I2SClocklessLedDriver _driver;
 
 uint8_t  _numNodes = 1; // default
 uint8_t  _nodePos = 0; // default

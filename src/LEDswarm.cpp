@@ -11,8 +11,8 @@ void setup() {
   Serial.begin(115200);
   delay(1000); // Startup delay; let things settle down
 
-  mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on; WARNING, buggy!!
-  // mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | DEBUG );  // set before init() so that you can see startup messages
+  // mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on; WARNING, buggy!!
+  mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | DEBUG );  // set before init() so that you can see startup messages
   // mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | SYNC );  // set before init() so that you can see startup messages
   // mesh.setDebugMsgTypes( ERROR | STARTUP );  // set before init() so that you can see startup messages
   mesh.init(MESH_PREFIX, MESH_PASSWORD, &userScheduler, MESH_PORT);
@@ -20,21 +20,21 @@ void setup() {
   mesh.onNewConnection(&newConnectionCallback);
   mesh.onChangedConnections(&changedConnectionCallback);
   mesh.onNodeTimeAdjusted(&nodeTimeAdjustedCallback);
-  mesh.onNodeDelayReceived(&delayReceivedCallback);
+  // mesh.onNodeDelayReceived(&delayReceivedCallback);
 
 #ifdef APA_102
   // FastLED.addLeds<CHIPSET, MY_DATA_PIN, MY_CLOCK_PIN, COLOR_ORDER, DATA_RATE_MHZ(12)>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
 #else
-  // FastLED.addLeds<CHIPSET, LED_PIN_1, COLOR_ORDER>(_localLeds, LEDS_PER_NODE);
+  FastLED.addLeds<CHIPSET, LED_PIN_1, COLOR_ORDER>(_localLeds, LEDS_PER_NODE);
 #endif
 
 #ifdef ATOMMATRIX 
-  // FastLED.addLeds<CHIPSET, ATOM_LEDPIN, COLOR_ORDER>(matrix_leds, ATOM_NUM_LED);
+  FastLED.addLeds<CHIPSET, ATOM_LEDPIN, COLOR_ORDER>(matrix_leds, ATOM_NUM_LED);
 #endif
 
-  int pins[1]={27};
-  _driver.initled((uint8_t*)_localLeds,pins,1,LEDS_PER_NODE,ORDER_GRB);
-  _driver.setBrightness(DEFAULT_BRIGHTNESS);
+  // int pins[1]={LED_PIN_1};
+  // _driver.initled((uint8_t*)_localLeds,pins,1,LEDS_PER_NODE,ORDER_GRB);
+  // _driver.setBrightness(DEFAULT_BRIGHTNESS);
 
   userScheduler.addTask( taskSendMessage );
   // userScheduler.addTask( taskCheckButtonPress );
@@ -522,7 +522,8 @@ void currentPatternRun() {
     } else {
       _localLeds[_nodePos] = CRGB::Green;
     }
-    _driver.showPixels();
+    // _driver.showPixels();
+    FastLED.show();
 }
 
 void selectNextPattern() {

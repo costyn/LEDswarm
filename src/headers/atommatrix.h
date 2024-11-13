@@ -8,13 +8,12 @@
 #define LED_PIN_1    26
 
 #define   MAX_NODES         5
-#define   MAX_MESH_LEDS      MAX_NODES*NUM_NODE_LEDS
+#define   MAX_MESH_LEDS      MAX_NODES*LEDS_PER_NODE
 
 // 80 is more than enough for night time
 #define DEFAULT_BRIGHTNESS 20
 #define MAX_BRIGHTNESS 20
 
-// #define ATOM_LEDPIN  27
 // Atom Matrix display/final brightness should not be more than 20!
 // MAX_BRIGHTNESS/255 = x/MAX_BRIGHTNESS
 #define ATOM_MAX_BRIGHTNESS  100
