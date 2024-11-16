@@ -2,11 +2,11 @@
 // External Test Strip on an Sparkfun ESP32 Thing:
 #define NEO_PIXEL
 
-#define NUM_LEDS    25
-#define LED_PIN_1    25
+#define NUM_LEDS 25
+#define LED_PIN_1 25
 #define NUM_LEDS_PER_STRIP 25
 #define DEFAULT_BRIGHTNESS 200
-#define MAX_BRIGHTNESS 200
+// #define MAX_BRIGHTNESS 200 // not used yet
 
 // ---- Buttons ----
 #define BUTTON_PIN 39

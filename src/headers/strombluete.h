@@ -2,16 +2,16 @@
 
 // ---- LED stuff ----
 #define NEO_PIXEL
-#define LEDS_PER_NODE   8
+#define LEDS_PER_NODE 8
 #define NUM_LEDS_PER_STRIP LEDS_PER_NODE
-#define LED_PIN_1       18
+#define LED_PIN_1 18
 
-#define MAX_NODES        5
-#define MAX_MESH_LEDS    MAX_NODES*LEDS_PER_NODE
+#define MAX_NODES 5
+#define MAX_MESH_LEDS MAX_NODES *LEDS_PER_NODE
 
 // There are only 8 leds
 #define DEFAULT_BRIGHTNESS 254
-#define MAX_BRIGHTNESS 254
+// #define MAX_BRIGHTNESS 254 // not used yet
 
 // ---- Buttons ----
 #define BUTTON_PIN 23
@@ -19,7 +19,7 @@
 
 // ---- Misc ----
 #define DEFAULT_BPM 130
-#define DEFAULT_PATTERN   1
+#define DEFAULT_PATTERN 1
 // Should the pattern auto advance? And how long to display each pattern?
 #define AUTOADVANCE
 #define AUTO_ADVANCE_DELAY 30

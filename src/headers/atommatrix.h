@@ -2,21 +2,21 @@
 
 // ---- LED stuff ----
 #define NEO_PIXEL
-#define LEDS_PER_NODE    25
+#define LEDS_PER_NODE 25
 #define ATOM_LEDPIN 27
 // #define ATOM_NUM_LED 25
-#define LED_PIN_1    26
+#define LED_PIN_1 26
 
-#define   MAX_NODES         5
-#define   MAX_MESH_LEDS      MAX_NODES*LEDS_PER_NODE
+#define MAX_NODES 5
+#define MAX_MESH_LEDS MAX_NODES *LEDS_PER_NODE
 
 // 80 is more than enough for night time
-#define DEFAULT_BRIGHTNESS 20
-#define MAX_BRIGHTNESS 20
+#define DEFAULT_BRIGHTNESS 80
+// #define MAX_BRIGHTNESS 100 // not used yet
 
 // Atom Matrix display/final brightness should not be more than 20!
 // MAX_BRIGHTNESS/255 = x/MAX_BRIGHTNESS
-#define ATOM_MAX_BRIGHTNESS  255
+// #define ATOM_MAX_BRIGHTNESS 100 // not used yet
 #define ATOM_NUM_LED 25
 
 // ---- Buttons ----
@@ -25,7 +25,7 @@
 
 // ---- Misc ----
 #define DEFAULT_BPM 130
-#define DEFAULT_PATTERN   1
+#define DEFAULT_PATTERN 1
 // Should the pattern auto advance? And how long to display each pattern?
 // #define AUTOADVANCE
 #define AUTO_ADVANCE_DELAY 30

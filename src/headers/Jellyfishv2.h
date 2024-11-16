@@ -3,16 +3,14 @@
 #define NEO_PIXEL
 
 #define NEO_PIXEL
-#define LED_PIN     21   // which pin your Neopixels are connected to
+#define LED_PIN 21 // which pin your Neopixels are connected to
 #define NUM_LEDS 205
 #define DEFAULT_BRIGHTNESS 100
-#define MAX_BRIGHTNESS 150
-
+// #define MAX_BRIGHTNESS 150 // not used yet
 
 // ---- Buttons ----
 #define BUTTON_PIN 39
 #define BUTTON_PIN 12
-
 
 // ---- Misc ----
 #define DEFAULT_BPM 60
