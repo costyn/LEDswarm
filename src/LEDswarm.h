@@ -29,6 +29,11 @@ extern Task taskCurrentPatternRun;
 extern Task taskSendMessage;
 extern Task taskSelectNextPattern;
 
+void receivedCallback(uint32_t from, String &msg);
+void newConnectionCallback(uint32_t nodeId);
+void changedConnectionCallback();
+void nodeTimeAdjustedCallback(int32_t offset);
+
 // Global pattern variables (we'll encapsulate these later)
 extern uint8_t currentPattern;
 extern uint8_t nextPattern;

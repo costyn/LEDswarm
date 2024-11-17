@@ -7,7 +7,12 @@
 #define TASK_CHECK_BUTTON_PRESS_INTERVAL 10
 #define CURRENTPATTERN_SELECT_DEFAULT_INTERVAL 5 // in milliseconds
 
+#define MESH_PREFIX "LEDforge"
+#define MESH_PASSWORD "somethingSneaky"
+#define MESH_PORT 5555
+
 Scheduler userScheduler;
+painlessMesh mesh;
 
 void checkButtonPressCallback();
 void currentPatternRunCallback();
@@ -36,7 +41,17 @@ void setup()
 
   animationController.init();
 
-  meshController.init();
+  mesh.setDebugMsgTypes(ERROR | STARTUP | SYNC);
+  mesh.init(MESH_PREFIX, MESH_PASSWORD, &userScheduler, MESH_PORT);
+  mesh.onReceive(&receivedCallback);
+  mesh.onNewConnection(&newConnectionCallback);
+  mesh.onChangedConnections(&changedConnectionCallback);
+  mesh.onNodeTimeAdjusted(&nodeTimeAdjustedCallback);
+
+  Serial.print("Starting up... my Node ID is: ");
+  Serial.println(mesh.getNodeId());
+
+  meshController.checkLeadership();
 
   uiController.init();
 
@@ -78,4 +93,21 @@ void selectNextPattern()
 void sendMessage()
 {
   meshController.sendMessage();
+}
+
+void receivedCallback(uint32_t from, String &msg)
+{
+  meshController.receivedCallback(from, msg);
+}
+void newConnectionCallback(uint32_t nodeId)
+{
+  meshController.newConnectionCallback(nodeId);
+}
+void changedConnectionCallback()
+{
+  meshController.changedConnectionCallback();
+}
+void nodeTimeAdjustedCallback(int32_t offset)
+{
+  meshController.nodeTimeAdjustedCallback(offset);
 }

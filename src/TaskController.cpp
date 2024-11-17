@@ -6,8 +6,6 @@
 #define TASK_CHECK_BUTTON_PRESS_INTERVAL 10
 #define CURRENTPATTERN_SELECT_DEFAULT_INTERVAL 5 // default scheduling time for currentPatternSELECT, in milliseconds
 
-Scheduler TaskController::scheduler;
-
 TaskController *TaskController::instance = nullptr;
 
 TaskController::TaskController(MeshController &meshCtrl, AnimationController &animCtrl, UIController &uiCtrl)
@@ -18,12 +16,12 @@ TaskController::TaskController(MeshController &meshCtrl, AnimationController &an
 
 void TaskController::init()
 {
-    scheduler.addTask(taskCheckButtonPress);
-    scheduler.addTask(taskCurrentPatternRun);
-    scheduler.addTask(taskSendMessage);
+    userScheduler.addTask(taskCheckButtonPress);
+    userScheduler.addTask(taskCurrentPatternRun);
+    userScheduler.addTask(taskSendMessage);
 
 #ifdef AUTOADVANCE
-    scheduler.addTask(taskSelectNextPattern);
+    userScheduler.addTask(taskSelectNextPattern);
     taskSelectNextPattern.enable();
 #endif
 

@@ -1,9 +1,5 @@
 #include "MeshController.h"
 
-#define MESH_PREFIX "LEDforge"
-#define MESH_PASSWORD "somethingSneaky"
-#define MESH_PORT 5555
-
 extern uint8_t currentPattern;
 extern uint8_t nextPattern;
 extern uint32_t currentBPM;
@@ -13,6 +9,7 @@ extern Task taskCheckButtonPress;
 extern Task taskSelectNextPattern;
 // Global scheduler
 extern Scheduler userScheduler;
+extern painlessMesh mesh;
 
 MeshController *MeshController::instance = nullptr;
 
@@ -28,17 +25,6 @@ MeshController::MeshController(AnimationController &animController)
 
 void MeshController::init()
 {
-    mesh.setDebugMsgTypes(ERROR | STARTUP | SYNC);
-    mesh.init(MESH_PREFIX, MESH_PASSWORD, &userScheduler, MESH_PORT);
-    mesh.onReceive(&receivedCallback);
-    mesh.onNewConnection(&newConnectionCallback);
-    mesh.onChangedConnections(&changedConnectionCallback);
-    mesh.onNodeTimeAdjusted(&nodeTimeAdjustedCallback);
-
-    Serial.print("Starting up... my Node ID is: ");
-    Serial.println(mesh.getNodeId());
-    checkLeadership();
-
     Serial.println("after mesh init");
 }
 
@@ -46,6 +32,10 @@ void MeshController::update()
 {
     mesh.update();
 }
+
+uint32_t getNodeId() { return mesh.getNodeId(); }
+uint32_t getNodeTime() { return mesh.getNodeTime(); }
+bool alone() { return mesh.getNodeList().size() <= 1; }
 
 void MeshController::checkLeadership()
 {
@@ -179,7 +169,7 @@ void MeshController::receivedCallback(uint32_t from, String &msg)
 
             Serial.printf("%s (%u) %u: \tBPM: %u\t Pattern: %u\n",
                           instance->_role.c_str(), instance->_nodePos,
-                          instance->mesh.getNodeTime(), currentBPM, currentPattern);
+                          mesh.getNodeTime(), currentBPM, currentPattern);
 
             tapTempo.setBPM(currentBPM);
         }
@@ -191,7 +181,7 @@ void MeshController::newConnectionCallback(uint32_t nodeId)
     if (!instance)
         return;
     Serial.printf("%s %u: New Connection from nodeId = %u\n",
-                  instance->_role.c_str(), instance->mesh.getNodeTime(), nodeId);
+                  instance->_role.c_str(), mesh.getNodeTime(), nodeId);
     instance->checkLeadership();
 }
 
@@ -200,8 +190,8 @@ void MeshController::changedConnectionCallback()
     if (!instance)
         return;
     Serial.printf("%s %u: Changed connections %s\n",
-                  instance->_role.c_str(), instance->mesh.getNodeTime(),
-                  instance->mesh.subConnectionJson().c_str());
+                  instance->_role.c_str(), mesh.getNodeTime(),
+                  mesh.subConnectionJson().c_str());
     instance->checkLeadership();
 }
 
@@ -210,5 +200,5 @@ void MeshController::nodeTimeAdjustedCallback(int32_t offset)
     if (!instance)
         return;
     Serial.printf("%s: Adjusted time %u. Offset = %d\n",
-                  instance->_role.c_str(), instance->mesh.getNodeTime(), offset);
+                  instance->_role.c_str(), mesh.getNodeTime(), offset);
 }
