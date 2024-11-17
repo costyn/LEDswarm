@@ -15,7 +15,7 @@ void setup()
 
   // mesh.setDebugMsgTypes(ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE); // all types on; WARNING, buggy!!
   // mesh.setDebugMsgTypes(ERROR | STARTUP | CONNECTION | DEBUG); // set before init() so that you can see startup messages
-  mesh.setDebugMsgTypes(ERROR | STARTUP | CONNECTION | SYNC); // set before init() so that you can see startup messages
+  mesh.setDebugMsgTypes(ERROR | STARTUP | SYNC); // set before init() so that you can see startup messages
   // mesh.setDebugMsgTypes( ERROR | STARTUP );  // set before init() so that you can see startup messages
   mesh.init(MESH_PREFIX, MESH_PASSWORD, &userScheduler, MESH_PORT);
   Serial.println("after mesh init");
@@ -84,23 +84,23 @@ void loop()
 // Better to have static and keep the memory allocated or not??
 void sendMessage()
 {
-  if (!tapTempo.isChainActive() or (currentPattern != nextPattern))
+  if (!tapTempo.isChainActive() || (currentPattern != nextPattern))
   {
-    static StaticJsonDocument<256> msg;
+    JsonDocument outgoingJsonMessage;
 
     currentPattern = nextPattern;   // update our own running pattern
     currentBPM = tapTempo.getBPM(); // update our BPM with (possibly new) BPM
     newBPMSet = false;              // reset the flag
 
-    msg["currentBPM"] = currentBPM;
-    msg["currentPattern"] = currentPattern;
+    outgoingJsonMessage["currentBPM"] = currentBPM;
+    outgoingJsonMessage["currentPattern"] = currentPattern;
 
-    String str;
-    serializeJson(msg, str);
-    mesh.sendBroadcast(str);
+    String outgoingJsonString;
+    serializeJson(outgoingJsonMessage, outgoingJsonString);
+    mesh.sendBroadcast(outgoingJsonString);
 
     Serial.printf("%s (%u) %u: Sent broadcast message: ", role.c_str(), _nodePos, mesh.getNodeTime());
-    Serial.println(str);
+    Serial.println(outgoingJsonString);
     // Serial.printf("Brightness: %i\n", _maxBright);
   }
   else
@@ -117,7 +117,7 @@ void checkLeadership()
 
   nodes.sort();
 
-  SimpleList<uint32_t>::iterator nodeIterator = nodes.begin(); // It's a std::list
+  // SimpleList<uint32_t>::iterator nodeIterator = nodes.begin(); // It's a std::list
 
   // Print out a list of nodes and check which has the lowest Node ID:
   Serial.printf("Node list: ");
@@ -173,7 +173,7 @@ void receivedCallback(uint32_t from, String &msg)
   // Serial.printf("Received msg from %u: %s\n", from, msg.c_str());
   if (role == FOLLOWER)
   {
-    static StaticJsonDocument<256> root;
+    JsonDocument root;
     deserializeJson(root, msg);
 
     if (root["currentBPM"])
@@ -193,7 +193,7 @@ void receivedCallback(uint32_t from, String &msg)
   }
   else if (role == LEADER)
   {
-    static StaticJsonDocument<256> root;
+    JsonDocument root;
     deserializeJson(root, msg);
 
     uint32_t patternRunTime = root["patternRunTime"].as<uint32_t>();
@@ -613,10 +613,9 @@ void currentPatternRun()
 #endif
   }
 
-  // Serial.print(".");
-
   // COPY
   memcpy(&_localLeds, &_meshleds[_nodePos * LEDS_PER_NODE], sizeof(CRGB) * LEDS_PER_NODE);
+
   // if( role == LEADER) {
   //   _localLeds[_nodePos] = CRGB::Purple;
   // } else {
@@ -628,6 +627,7 @@ void currentPatternRun()
 void selectNextPattern()
 {
   nextPattern = currentPattern + 1;
+  // Serial.printf("%s (%u) %u: after upping nextPattern: %i, NUMROUTINES = %i\n", role.c_str(), _nodePos, mesh.getNodeTime(), nextPattern, NUMROUTINES);
 
   if (nextPattern >= NUMROUTINES)
   {

@@ -27,7 +27,7 @@
 #define DEFAULT_BPM 130
 #define DEFAULT_PATTERN 1
 // Should the pattern auto advance? And how long to display each pattern?
-// #define AUTOADVANCE
+#define AUTOADVANCE
 #define AUTO_ADVANCE_DELAY 30
 
 // ---- Which Patterns To Include? ----

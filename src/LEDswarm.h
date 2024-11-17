@@ -128,7 +128,7 @@ Task taskSelectNextPattern(TASK_SECOND *AUTO_ADVANCE_DELAY, TASK_FOREVER, &selec
 
 // TODO: rewrite this garbage
 // Routine Palette Rainbow is always included - a safe routine
-const char *routines[1024] = {
+const char *routines[] = {
     "p_rb_stripe",
 #ifdef RT_P_RB
     "p_rb",
