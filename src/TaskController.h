@@ -4,6 +4,8 @@
 
 #include <TaskScheduler.h>
 
+extern Scheduler userScheduler;
+
 // Forward declarations
 class MeshController;
 class AnimationController;

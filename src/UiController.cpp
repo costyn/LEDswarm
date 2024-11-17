@@ -1,7 +1,5 @@
 #include "UiController.h"
 
-extern Task taskSendMessage;
-
 UIController::UIController(AnimationController &animController, MeshController &meshController)
     : bpmButton(BPM_BUTTON_PIN),
       nextPatternButton(BUTTON_PIN),
