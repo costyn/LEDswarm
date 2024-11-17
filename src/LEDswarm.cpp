@@ -13,9 +13,9 @@ void setup()
   delay(1000); // Startup delay; let things settle down
   Serial.println("after Serial begin");
 
-  // mesh.setDebugMsgTypes( ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE ); // all types on; WARNING, buggy!!
-  mesh.setDebugMsgTypes(ERROR | STARTUP | CONNECTION | DEBUG); // set before init() so that you can see startup messages
-  // mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION | SYNC );  // set before init() so that you can see startup messages
+  // mesh.setDebugMsgTypes(ERROR | MESH_STATUS | CONNECTION | SYNC | COMMUNICATION | GENERAL | MSG_TYPES | REMOTE); // all types on; WARNING, buggy!!
+  // mesh.setDebugMsgTypes(ERROR | STARTUP | CONNECTION | DEBUG); // set before init() so that you can see startup messages
+  mesh.setDebugMsgTypes(ERROR | STARTUP | CONNECTION | SYNC); // set before init() so that you can see startup messages
   // mesh.setDebugMsgTypes( ERROR | STARTUP );  // set before init() so that you can see startup messages
   mesh.init(MESH_PREFIX, MESH_PASSWORD, &userScheduler, MESH_PORT);
   Serial.println("after mesh init");
@@ -58,8 +58,8 @@ void setup()
   bpmButton.begin();
   nextPatternButton.begin();
 
-  // DO NOT UNCOMMENT. CRASHES ESP32!
-  // tapTempo.setBPM(DEFAULT_BPM);
+  // Be warned: Causes crash on main branch of ArduinoTapTempo
+  tapTempo.setBPM(DEFAULT_BPM);
 
   Serial.print("Starting up... my Node ID is: ");
   Serial.println(mesh.getNodeId());
@@ -101,7 +101,7 @@ void sendMessage()
 
     Serial.printf("%s (%u) %u: Sent broadcast message: ", role.c_str(), _nodePos, mesh.getNodeTime());
     Serial.println(str);
-    Serial.printf("Brightness: %i\n", _maxBright);
+    // Serial.printf("Brightness: %i\n", _maxBright);
   }
   else
   {
@@ -181,8 +181,8 @@ void receivedCallback(uint32_t from, String &msg)
       currentBPM = root["currentBPM"].as<uint32_t>();
       nextPattern = root["currentPattern"].as<uint8_t>();
       Serial.printf("%s (%u) %u: \tBPM: %u\t Pattern: %u\n", role.c_str(), _nodePos, mesh.getNodeTime(), currentBPM, currentPattern);
-      Serial.printf("  (%d nodes). Mesh led count: %d\n", _numNodes, _meshNumLeds);
-      Serial.printf("%s %u: \t taskSendMessage: %d\t taskCheckButtonPress: %d\t taskSelectNextPattern: %d\n", role.c_str(),
+      Serial.printf("  (%d nodes). Mesh LED count: %d\n", _numNodes, _meshNumLeds);
+      Serial.printf("%s %u: Tasks Enabled: \t taskSendMessage: %d\t taskCheckButtonPress: %d\t taskSelectNextPattern: %d\n", role.c_str(),
                     mesh.getNodeTime(), taskSendMessage.isEnabled(), taskCheckButtonPress.isEnabled(), taskSelectNextPattern.isEnabled());
       tapTempo.setBPM(currentBPM);
     }

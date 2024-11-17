@@ -87,8 +87,8 @@ Scheduler userScheduler; // to control your personal task
 
 // BPM variables
 ArduinoTapTempo tapTempo;
-bool newBPMSet = true;     // flag for when new BPM is set by button
-uint32_t currentBPM = 120; // default BPM of ArduinoTapTempo
+bool newBPMSet = true;             // flag for when new BPM is set by button
+uint32_t currentBPM = DEFAULT_BPM; // default BPM of ArduinoTapTempo
 
 Button bpmButton(BPM_BUTTON_PIN);
 // Button bpmButton(BPM_BUTTON_PIN, 50, true, true);

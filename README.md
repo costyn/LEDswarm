@@ -12,13 +12,15 @@ Using these awesome libraries:
 * TaskScheduler: https://github.com/arkhipenko/TaskScheduler
 * ArduinoTapTempo: https://github.com/dxinteractive/ArduinoTapTempo
 
+*Please note the official ArduinoTapTempo has a bug that crashes ESP32* I've updated platformio.ini with a fork that has a fix
+
 ## Features
 * No central node needed
 * Automatic joining of wifi mesh
 * Mesh leader election
 * Automatic synchronisation of pattern, pattern timing and BPM (for bpm based patterns). 
 * Each node will work standalone when out of range of the rest (it will become it's own leader)
-* On the Atom Matrix 5x5 rgb display the heart will pulse slowly when *alone* (out of range) and will pulse quickly when *together in a mesh!*
+* On the Atom Matrix 5x5 rgb display the heart animation will pulse slowly (with a blue center) when *alone* (out of range) and will pulse quickly when *together in a mesh!*
 
 Exact synchronisation of patterns and timing is done by FastLED using the clock from the mesh instead of an internal timer:
 
