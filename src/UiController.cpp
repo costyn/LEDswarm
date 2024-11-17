@@ -1,7 +1,14 @@
 #include "UiController.h"
 
-UIController::UIController(AnimationController &animController)
-    : bpmButton(BPM_BUTTON_PIN), nextPatternButton(BUTTON_PIN), _animController(animController)
+extern Task taskSendMessage;
+
+UIController::UIController(AnimationController &animController, MeshController &meshController)
+    : bpmButton(BPM_BUTTON_PIN),
+      nextPatternButton(BUTTON_PIN),
+      _animController(animController),
+      _meshController(meshController),
+      newBPMSet(false),
+      currentBPM(DEFAULT_BPM)
 {
 }
 
@@ -12,31 +19,27 @@ void UIController::init()
     tapTempo.setBPM(DEFAULT_BPM);
 }
 
-void UIController::update()
+void UIController::checkButtonPress()
 {
+    // bpmButton.read();  // Commented out as in original
     nextPatternButton.read();
 
-    // if( bpmButton.wasPressed() ) {
-    //   tapTempo.update(true); // update ArduinoTapTempo
-    //   Serial.printf("%s %u: Button TAP. BPM: ", role.c_str(), mesh.getNodeTime() );
-    //   Serial.println(tapTempo.getBPM() );
-    //   newBPMSet = true ;
+    // if (bpmButton.wasPressed()) {
+    //     tapTempo.update(true);
+    //     Serial.printf("%s %u: Button TAP. BPM: ", _meshController.isLeader() ? LEADER : FOLLOWER,
+    //                  _meshController.getNodeTime());
+    //     Serial.println(tapTempo.getBPM());
+    //     newBPMSet = true;
     // } else {
-    //   tapTempo.update(false);
+    //     tapTempo.update(false);
     // }
 
     if (nextPatternButton.wasPressed())
     {
-        nextPattern = currentPattern + 1;
-        // Serial.printf("%s (%u) %u: after upping nextPattern: %i, NUMROUTINES = %i\n", role.c_str(), _nodePos, mesh.getNodeTime(), nextPattern, NUMROUTINES);
-
-        if (nextPattern >= NUMROUTINES)
-        {
-            nextPattern = 0;
-        }
-
-        if (role == LEADER)
-        {
-            taskSendMessage.forceNextIteration(); // Schedule next iteration immediately, for sending a new pattern msg to Follower
-        }
+        _animController.selectNextPattern();
     }
+
+    // if (nextPatternButton.pressedFor(500)) {
+    //     cycleBrightness();
+    // }
+}

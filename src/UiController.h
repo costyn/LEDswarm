@@ -4,21 +4,26 @@
 #include <JC_Button.h>
 #include <ArduinoTapTempo.h>
 #include "AnimationController.h"
+#include "MeshController.h"
 
 class UIController
 {
 public:
-    UIController(AnimationController &animController);
+    UIController(AnimationController &animController, MeshController &meshController);
     void init();
-    void update();
+    void checkButtonPress();
+    ArduinoTapTempo &getTapTempo() { return tapTempo; }
+    uint32_t getCurrentBPM() const { return currentBPM; }
 
 private:
     Button bpmButton;
     Button nextPatternButton;
     ArduinoTapTempo tapTempo;
-    AnimationController &_animController;
+    bool newBPMSet;
+    uint32_t currentBPM;
 
-    void checkButtonPress();
+    AnimationController &_animController;
+    MeshController &_meshController;
 };
 
 #endif

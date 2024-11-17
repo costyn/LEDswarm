@@ -6,7 +6,6 @@
 Scheduler TaskController::scheduler;
 
 #define TASK_CHECK_BUTTON_PRESS_INTERVAL 10
-#define CURRENTPATTERN_SELECT_DEFAULT_INTERVAL 5
 
 TaskController::TaskController(MeshController &meshCtrl, AnimationController &animCtrl, UIController &uiCtrl)
     : _meshController(meshCtrl),
