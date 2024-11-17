@@ -40,6 +40,8 @@ public:
     void setNextPattern(uint8_t pattern) { nextPattern = pattern; }
 
 private:
+    static const char *const routines[];
+    static const uint8_t numRoutines;
     uint8_t currentPattern;
     uint8_t nextPattern;
     uint16_t meshNumLeds;

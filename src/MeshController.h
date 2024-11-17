@@ -21,6 +21,7 @@ public:
     void update();
     void checkLeadership();
     void sendMessage();
+    void broadcastPatternChange();
     uint32_t getNodeId() { return mesh.getNodeId(); }
     uint32_t getNodeTime() { return mesh.getNodeTime(); }
     bool isLeader() const { return _role == LEADER; }
@@ -41,7 +42,6 @@ private:
     static void changedConnectionCallback();
     static void nodeTimeAdjustedCallback(int32_t offset);
     void updateNodePosition(uint32_t currentNodeId);
-    void broadcastPatternChange();
     bool alone() { return mesh.getNodeList().size() <= 1; }
 };
 

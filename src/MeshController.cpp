@@ -106,9 +106,9 @@ void MeshController::checkLeadership()
         }
     }
 
-    Serial.printf("%s %u: checkLeadership(); I am %s\n", role.c_str(), timeNow, role.c_str());
+    Serial.printf("%s %u: checkLeadership(); I am %s\n", _role.c_str(), timeNow, _role.c_str());
     Serial.printf("%s %u: %d nodes. Mesh LEDs: %d. NodePos: %d Root: %d\n",
-                  role.c_str(), timeNow, _numNodes, _meshNumLeds, _nodePos, mesh.isRoot());
+                  _role.c_str(), timeNow, _numNodes, _meshNumLeds, _nodePos, mesh.isRoot());
 }
 
 void MeshController::updateNodePosition(uint32_t currentNodeId)
@@ -152,7 +152,7 @@ void MeshController::sendMessage()
         serializeJson(outgoingJsonMessage, outgoingJsonString);
         mesh.sendBroadcast(outgoingJsonString);
 
-        Serial.printf("%s (%u) %u: Sent broadcast message: ", role.c_str(), _nodePos, mesh.getNodeTime());
+        Serial.printf("%s (%u) %u: Sent broadcast message: ", _role.c_str(), _nodePos, mesh.getNodeTime());
         Serial.println(outgoingJsonString);
     }
     else

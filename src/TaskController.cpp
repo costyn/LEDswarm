@@ -3,9 +3,12 @@
 #include "AnimationController.h"
 #include "UiController.h"
 
+#define TASK_CHECK_BUTTON_PRESS_INTERVAL 10
+#define CURRENTPATTERN_SELECT_DEFAULT_INTERVAL 5 // default scheduling time for currentPatternSELECT, in milliseconds
+
 Scheduler TaskController::scheduler;
 
-#define TASK_CHECK_BUTTON_PRESS_INTERVAL 10
+TaskController *TaskController::instance = nullptr;
 
 TaskController::TaskController(MeshController &meshCtrl, AnimationController &animCtrl, UIController &uiCtrl)
     : _meshController(meshCtrl),
@@ -16,6 +19,7 @@ TaskController::TaskController(MeshController &meshCtrl, AnimationController &an
       taskSendMessage(TASK_SECOND * 5, TASK_FOREVER, &sendMessageCallback),
       taskSelectNextPattern(TASK_SECOND * AUTO_ADVANCE_DELAY, TASK_FOREVER, &selectNextPatternCallback)
 {
+    instance = this;
 }
 
 void TaskController::init()
@@ -33,22 +37,51 @@ void TaskController::init()
     taskCurrentPatternRun.enable();
 }
 
-void TaskController::checkButtonPressCallback()
+// Non-static member functions that do the actual work
+void TaskController::checkButtonPress()
 {
     _uiController.checkButtonPress();
 }
 
+void TaskController::currentPatternRun()
+{
+    _animController.currentPatternRun();
+}
+
+void TaskController::sendMessage()
+{
+    _meshController.sendMessage();
+}
+// Changing to the next pattern can come from 2 sources,
+// Either the user presses a button, or the scheduler
+// timer reaches a ~30 second interval
+void TaskController::selectNextPattern()
+{
+    _animController.selectNextPattern();
+    _meshController.broadcastPatternChange();
+}
+
+// Static callback wrappers that delegate to the instance methods
+void TaskController::checkButtonPressCallback()
+{
+    if (instance)
+        instance->checkButtonPress();
+}
+
 void TaskController::currentPatternRunCallback()
 {
-    _animController.updatePattern();
+    if (instance)
+        instance->currentPatternRun();
 }
 
 void TaskController::sendMessageCallback()
 {
-    _meshController.broadcastCurrentState();
+    if (instance)
+        instance->sendMessage();
 }
 
 void TaskController::selectNextPatternCallback()
 {
-    _animController.nextPattern();
+    if (instance)
+        instance->selectNextPattern();
 }

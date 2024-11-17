@@ -1,10 +1,8 @@
+// TaskController.h
 #ifndef TASK_CONTROLLER_H
 #define TASK_CONTROLLER_H
 
 #include <TaskScheduler.h>
-
-#define TASK_CHECK_BUTTON_PRESS_INTERVAL 10
-#define CURRENTPATTERN_SELECT_DEFAULT_INTERVAL 5
 
 // Forward declarations
 class MeshController;
@@ -16,12 +14,21 @@ class TaskController
 public:
     TaskController(MeshController &meshCtrl, AnimationController &animCtrl, UIController &uiCtrl);
     void init();
+    void selectNextPattern();
 
     // Public because it needs to be accessible by the mesh library
     static Scheduler scheduler;
 
+    // Make instance accessible for callbacks
+    static TaskController *instance;
+
 private:
-    // Task callback methods
+    // Changed to non-static member functions
+    void checkButtonPress();
+    void currentPatternRun();
+    void sendMessage();
+
+    // Static callback wrappers
     static void checkButtonPressCallback();
     static void currentPatternRunCallback();
     static void sendMessageCallback();

@@ -37,6 +37,7 @@ void UIController::checkButtonPress()
     if (nextPatternButton.wasPressed())
     {
         _animController.selectNextPattern();
+        _meshController.broadcastPatternChange();
     }
 
     // if (nextPatternButton.pressedFor(500)) {
